@@ -1,9 +1,9 @@
 {
   "name": "electron-template",
-  "version": "0.3.0",
-  "description": "Electron multi-window template with Vite, React, TypeScript, IPC, auto-updates, and logging.",
+  "version": "0.1.0",
+  "description": "Electron template with Vite, React, TypeScript",
   "main": "dist/main/main/main.js",
-  "author": "",
+  "author": "fhf",
   "license": "MIT",
   "scripts": {
     "dev": "concurrently -k \"npm:watch:shared\" \"npm:sync:shared:watch\" \"npm:watch:main\" \"npm:watch:preload\" \"npm:dev:renderer\" \"npm:start\"",
