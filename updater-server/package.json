@@ -1,0 +1,10 @@
+{
+  "name": "update-server",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node server.cjs"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}

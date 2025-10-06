@@ -1,0 +1,14 @@
+node_modules/
+**/node_modules/
+dist
+dist_electron
+*.log
+.DS_Store
+coverage
+updater-server/public/
+
+# Prevent stray compiled shared outputs
+src/shared/*.js
+
+# TypeScript build info
+*.tsbuildinfo

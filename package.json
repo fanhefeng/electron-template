@@ -1,0 +1,99 @@
+{
+  "name": "electron-template",
+  "version": "0.3.0",
+  "description": "Electron multi-window template with Vite, React, TypeScript, IPC, auto-updates, and logging.",
+  "main": "dist/main/main/main.js",
+  "author": "",
+  "license": "MIT",
+  "scripts": {
+    "dev": "concurrently -k \"npm:watch:shared\" \"npm:sync:shared:watch\" \"npm:watch:main\" \"npm:watch:preload\" \"npm:dev:renderer\" \"npm:start\"",
+    "watch:shared": "tsc -p tsconfig.shared.json -w",
+    "sync:shared": "node scripts/sync-shared.cjs",
+    "sync:shared:watch": "node scripts/sync-shared.cjs --watch",
+    "watch:main": "tsc -p tsconfig.main.json -w",
+    "watch:preload": "tsc -p tsconfig.preload.json -w",
+    "dev:renderer": "vite",
+    "start": "wait-on tcp:5173 dist/main/main/main.js dist/preload/preload/mainPreload.js && electron .",
+    "clean": "node -e \"const fs=require('fs');const paths=['dist','dist_electron','tsconfig.main.tsbuildinfo','tsconfig.preload.tsbuildinfo','tsconfig.renderer.tsbuildinfo','tsconfig.shared.tsbuildinfo'];paths.forEach(p=>{if(fs.existsSync(p))fs.rmSync(p,{recursive:true,force:true});});\"",
+    "build": "npm run clean && npm run build:shared && npm run build:main && npm run build:preload && npm run sync:shared && npm run build:renderer",
+    "build:shared": "tsc -p tsconfig.shared.json",
+    "build:main": "tsc -p tsconfig.main.json",
+    "build:preload": "tsc -p tsconfig.preload.json",
+    "build:renderer": "vite build",
+    "lint": "eslint \"src/**/*.{ts,tsx}\"",
+    "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix",
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit",
+    "package": "npm run build && electron-builder",
+    "deploy-update": "node scripts/deploy-update.js",
+    "package-and-deploy": "npm run package && npm run deploy-update",
+    "start-update-server": "cd updater-server && npm install && npm start"
+  },
+  "dependencies": {
+    "electron-log": "^5.4.3",
+    "electron-updater": "^6.6.2",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "@types/react": "^19.1.15",
+    "@types/react-dom": "^19.1.9",
+    "@typescript-eslint/eslint-plugin": "^8.44.1",
+    "@typescript-eslint/parser": "^8.44.1",
+    "concurrently": "^9.2.1",
+    "electron": "^38.2.0",
+    "electron-builder": "^26.0.12",
+    "eslint": "^9.36.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.7",
+    "vite-plugin-electron": "^0.29.0",
+    "vite-plugin-electron-renderer": "^0.14.6",
+    "wait-on": "^9.0.1",
+    "@vitejs/plugin-react": "^5.0.4"
+  },
+  "build": {
+    "appId": "com.example.electrontemplate",
+    "productName": "ElectronTemplate",
+    "directories": {
+      "output": "dist_electron",
+      "buildResources": "resources"
+    },
+    "extraResources": [
+      {
+        "from": "resources/fonts",
+        "to": "fonts"
+      }
+    ],
+    "files": [
+      "dist/main/**/*",
+      "dist/preload/**/*",
+      "dist/renderer/**/*"
+    ],
+    "publish": {
+      "provider": "generic",
+      "url": "http://localhost:8080/updates"
+    },
+    "mac": {
+      "icon": "resources/icons/icon.icns",
+      "category": "public.app-category.productivity",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "identity": null,
+      "type": "distribution"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  }
+}

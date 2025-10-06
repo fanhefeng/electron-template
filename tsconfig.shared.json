@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist/shared",
+    "rootDir": "src/shared",
+    "tsBuildInfoFile": "dist/cache/tsconfig.shared.tsbuildinfo",
+    "module": "CommonJS",
+    "target": "ES2021",
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
+  },
+  "include": ["src/shared/**/*"],
+  "exclude": ["node_modules"]
+}

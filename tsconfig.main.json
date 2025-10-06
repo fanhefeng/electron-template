@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "outDir": "dist/main",
+    "rootDir": "src",
+    "tsBuildInfoFile": "dist/cache/tsconfig.main.tsbuildinfo",
+    "lib": ["ES2021"],
+    "types": ["node"],
+    "composite": true
+  },
+  "include": ["src/main/**/*"],
+  "exclude": ["node_modules"],
+  "references": [{ "path": "./tsconfig.shared.json" }]
+}
