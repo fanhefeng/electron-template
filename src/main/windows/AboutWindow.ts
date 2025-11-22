@@ -6,7 +6,6 @@ export class AboutWindow extends AbstractWindow {
     super({
       name: 'about',
       preload: resourceService.getPreloadScript('about'),
-      url: 'http://localhost:5173/about/index.html',
       windowOptions: {
         width: 480,
         height: 360,

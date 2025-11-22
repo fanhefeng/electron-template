@@ -6,7 +6,6 @@ export class SettingsWindow extends AbstractWindow {
     super({
       name: 'settings',
       preload: resourceService.getPreloadScript('settings'),
-      url: 'http://localhost:5173/settings/index.html',
       windowOptions: {
         width: 640,
         height: 480

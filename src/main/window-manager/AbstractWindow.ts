@@ -40,6 +40,15 @@ export abstract class AbstractWindow {
       this.browserWindow = null;
     });
 
+    this.browserWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+    this.browserWindow.webContents.on('will-navigate', (event, url) => {
+      const allowed = app.isPackaged ? url.startsWith('file://') : url.startsWith('http://localhost:5173/');
+      if (!allowed) {
+        event.preventDefault();
+        logger.warn(`Blocked navigation in ${this.options.name}: ${url}`);
+      }
+    });
+
     this.loadContent();
 
     return this.browserWindow;
@@ -58,8 +67,10 @@ export abstract class AbstractWindow {
       return;
     }
 
-    if (!app.isPackaged && this.options.url) {
-      this.browserWindow.loadURL(this.options.url).catch((error) => {
+    if (!app.isPackaged) {
+      const base = process.env.ELECTRON_DEV_SERVER_URL ?? 'http://localhost:5173/';
+      const devUrl = this.options.url ?? `${base}${this.getHtmlFileName()}`;
+      this.browserWindow.loadURL(devUrl).catch((error) => {
         logger.error(`Failed to load URL for ${this.options.name}`, error);
       });
       if (this.shouldOpenDevTools()) {

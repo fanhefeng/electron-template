@@ -6,7 +6,7 @@ export class MainWindow extends AbstractWindow {
     super({
       name: 'main',
       preload: resourceService.getPreloadScript('main'),
-      url: 'http://localhost:5173/main/index.html'
+      
     });
   }
 

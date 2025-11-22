@@ -15,7 +15,7 @@ export class UpdateService {
   constructor() {
     autoUpdater.autoDownload = false;
     autoUpdater.autoInstallOnAppQuit = false;
-    autoUpdater.logger = logger as unknown as Console;
+    autoUpdater.logger = logger;
     
     // 开发环境配置
     const isDev = !app.isPackaged;
