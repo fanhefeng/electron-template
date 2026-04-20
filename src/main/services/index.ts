@@ -3,7 +3,6 @@ export * from "./system-service/SystemService";
 export * from "./update-service";
 export * from "./theme-service";
 export * from "./download-service";
-export * from "./file-service";
 export * from "./i18n-service";
 export * from "./resource-service";
 export * from "./font-service";
