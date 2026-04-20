@@ -1,23 +1,27 @@
 import type { BrowserWindow } from "electron";
 import { app } from "electron";
 import { logger } from "../logger-service";
-import { DEEP_LINK_SCHEME } from "../../../shared/deepLink";
 import { IPC_CHANNELS } from "../../../shared/ipcChannels";
 import type { DeepLinkPayload } from "../../../shared/deepLink";
 import type { WindowManager, WindowIdentifier } from "../../window-manager/WindowManager";
+import { getEnvConfig } from "../../environment";
 
 export class DeepLinkService {
   private windowManager?: WindowManager;
   private pendingPayload: DeepLinkPayload | null = null;
 
+  private get scheme(): string {
+    return getEnvConfig().deepLinkScheme;
+  }
+
   register(): void {
     if (!app.isPackaged) {
       // 开发模式下需要传入可执行路径才能正确注册协议
-      app.setAsDefaultProtocolClient(DEEP_LINK_SCHEME, process.execPath, [process.argv[1]]);
+      app.setAsDefaultProtocolClient(this.scheme, process.execPath, [process.argv[1]]);
     } else {
-      app.setAsDefaultProtocolClient(DEEP_LINK_SCHEME);
+      app.setAsDefaultProtocolClient(this.scheme);
     }
-    logger.info(`Deep link protocol registered: ${DEEP_LINK_SCHEME}://`);
+    logger.info(`Deep link protocol registered: ${this.scheme}://`);
   }
 
   setWindowManager(windowManager: WindowManager): void {
@@ -31,7 +35,7 @@ export class DeepLinkService {
   }
 
   parse(url: string): DeepLinkPayload | null {
-    if (!url || !url.startsWith(`${DEEP_LINK_SCHEME}://`)) {
+    if (!url || !url.startsWith(`${this.scheme}://`)) {
       return null;
     }
 
@@ -85,7 +89,7 @@ export class DeepLinkService {
 
   /** 从 argv 中提取 deep link URL（用于 second-instance） */
   extractFromArgv(argv: string[]): string | undefined {
-    return argv.find((arg) => arg.startsWith(`${DEEP_LINK_SCHEME}://`));
+    return argv.find((arg) => arg.startsWith(`${this.scheme}://`));
   }
 
   private resolveWindow(target: string): WindowIdentifier {

@@ -1,7 +1,3 @@
-import { APP_CONFIG } from "./appConfig";
-
-export const DEEP_LINK_SCHEME = APP_CONFIG.deepLinkScheme;
-
 export interface DeepLinkPayload {
   /** 原始 URL */
   raw: string;
