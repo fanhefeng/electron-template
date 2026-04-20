@@ -6,6 +6,11 @@ import type { ProgressInfo } from "electron-updater";
 
 declare global {
   interface Window {
+    app?: {
+      getMessages: () => Promise<Record<string, string>>;
+      onSettingsUpdated: (listener: (_event: unknown, settings: AppSettings) => void) => void;
+      offSettingsUpdated: (listener: (_event: unknown, settings: AppSettings) => void) => void;
+    };
     electronAPI?: {
       checkForUpdates: () => Promise<void>;
       applyUpdate: () => Promise<void>;

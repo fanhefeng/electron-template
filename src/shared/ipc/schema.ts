@@ -10,6 +10,7 @@ export type IpcContract = {
   "fonts/list": { req: void; res: FontAsset[] };
   "app/version": { req: void; res: string };
   "window/open": { req: OpenWindowPayload; res: void };
+  "i18n/messages": { req: void; res: Record<string, string> };
 };
 
 export type IpcChannel = keyof IpcContract;

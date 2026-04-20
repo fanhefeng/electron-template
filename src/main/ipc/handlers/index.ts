@@ -3,6 +3,7 @@ import { checkForUpdates, applyUpdate } from "./updaterHandler";
 import { getSettings, updateSettings } from "./settingsHandler";
 import { listFonts } from "./fontHandler";
 import { getAppVersion } from "./appHandler";
+import { getI18nMessages } from "./i18nHandler";
 import type { WindowManager } from "../../window-manager/WindowManager";
 import { handleTyped } from "../typed";
 
@@ -13,6 +14,7 @@ export const registerIpcHandlers = (windowManager: WindowManager): void => {
   handleTyped("settings/update", updateSettings);
   handleTyped("fonts/list", listFonts);
   handleTyped("app/version", getAppVersion);
+  handleTyped("i18n/messages", getI18nMessages);
   handleTyped("window/open", (_event, payload: OpenWindowPayload) => {
     const validWindows: OpenWindowPayload[] = ["about", "settings"];
     if (!validWindows.includes(payload)) {

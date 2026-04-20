@@ -1,4 +1,4 @@
-import { ipcRenderer } from "electron";
+import { contextBridge, ipcRenderer } from "electron";
 import type { AppSettings } from "../shared/settings";
 import type { FontAsset } from "../shared/fonts";
 import { SYSTEM_FONT_ID, SYSTEM_FONT_STACK } from "../shared/fonts";
@@ -11,9 +11,20 @@ let fontCatalogPromise: Promise<Map<string, FontAsset>> | null = null;
 const injectedFonts = new Set<string>();
 
 export const initializeAppearanceBridge = (): void => {
-  ipcRenderer.on("settings:updated", (_event, settings: AppSettings) => {
+  // 暴露 window.app — 所有窗口共享的通用 API
+  contextBridge.exposeInMainWorld("app", {
+    getMessages: () => ipcRenderer.invoke(IPC_CHANNELS.GET_MESSAGES) as Promise<Record<string, string>>,
+    onSettingsUpdated: (callback: (_event: Electron.IpcRendererEvent, settings: AppSettings) => void) =>
+      ipcRenderer.on(IPC_CHANNELS.SETTINGS_UPDATED, callback),
+    offSettingsUpdated: (callback: (_event: Electron.IpcRendererEvent, settings: AppSettings) => void) =>
+      ipcRenderer.removeListener(IPC_CHANNELS.SETTINGS_UPDATED, callback),
+  });
+
+  ipcRenderer.on(IPC_CHANNELS.SETTINGS_UPDATED, (_event, settings: AppSettings) => {
     fontCatalogPromise = null;
-    void applyAppearance(settings);
+    void applyAppearance(settings).catch((error) =>
+      console.error("[appearanceBridge] Failed to apply appearance", error)
+    );
   });
 
   void (ipcRenderer.invoke(IPC_CHANNELS.GET_SETTINGS) as Promise<AppSettings>)

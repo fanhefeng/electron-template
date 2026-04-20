@@ -3,6 +3,7 @@ import { dialog, app } from "electron";
 import { autoUpdater } from "electron-updater";
 import type { ProgressInfo } from "electron-updater";
 import { logger } from "../logger-service";
+import { i18nService } from "../i18n-service";
 import type { SystemService } from "../system-service/SystemService";
 import * as path from "path";
 
@@ -93,7 +94,10 @@ export class UpdateService {
   private handleUpdateAvailable = (): void => {
     logger.info("Update available");
     this.window?.webContents.send("update-available");
-    this.systemService?.showNotification("更新可用", "检测到新版本，准备下载。");
+    this.systemService?.showNotification(
+      i18nService.t("notification.update.available.title"),
+      i18nService.t("notification.update.available.body")
+    );
     if (!this.isDownloading && !this.isDownloaded) {
       this.downloadUpdate();
     }
@@ -104,14 +108,20 @@ export class UpdateService {
     this.isDownloading = false;
     this.isDownloaded = false;
     this.window?.webContents.send("update-not-available");
-    this.systemService?.showNotification("暂无更新", "当前已是最新版本。");
+    this.systemService?.showNotification(
+      i18nService.t("notification.update.notAvailable.title"),
+      i18nService.t("notification.update.notAvailable.body")
+    );
   };
 
   private handleError = (error: unknown): void => {
     logger.error("Update error", error);
     this.isDownloading = false;
     this.window?.webContents.send("update-error", error instanceof Error ? error.message : String(error));
-    this.systemService?.showNotification("更新失败", "更新检查过程中出现问题。");
+    this.systemService?.showNotification(
+      i18nService.t("notification.update.error.title"),
+      i18nService.t("notification.update.error.body")
+    );
   };
 
   private handleDownloadProgress = (progress: ProgressInfo): void => {
@@ -124,7 +134,10 @@ export class UpdateService {
     this.isDownloading = false;
     this.isDownloaded = true;
     this.window?.webContents.send("update-downloaded");
-    this.systemService?.showNotification("更新就绪", "新版本已下载，准备安装。");
+    this.systemService?.showNotification(
+      i18nService.t("notification.update.ready.title"),
+      i18nService.t("notification.update.ready.body")
+    );
   };
 
   private downloadUpdate(): void {
@@ -134,7 +147,10 @@ export class UpdateService {
       this.isDownloading = false;
       logger.error("Failed to download update", error);
       this.window?.webContents.send("update-error", error instanceof Error ? error.message : String(error));
-      this.systemService?.showNotification("下载失败", "无法下载更新包。");
+      this.systemService?.showNotification(
+        i18nService.t("notification.update.downloadFailed.title"),
+        i18nService.t("notification.update.downloadFailed.body")
+      );
     });
   }
 }

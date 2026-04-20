@@ -1,22 +1,34 @@
 import { useEffect, useState } from "react";
+import { useI18n } from "../hooks/useI18n";
 
 export const AboutApp = () => {
   const [appVersion, setAppVersion] = useState<string>("");
-  const nodeVersion = window.aboutAPI?.getNodeVersion() ?? "unknown";
-  const electronVersion = window.aboutAPI?.getElectronVersion() ?? "unknown";
-  const chromeVersion = window.aboutAPI?.getChromeVersion() ?? "unknown";
+  const nodeVersion = window.aboutAPI?.getNodeVersion() ?? "";
+  const electronVersion = window.aboutAPI?.getElectronVersion() ?? "";
+  const chromeVersion = window.aboutAPI?.getChromeVersion() ?? "";
+  const { t } = useI18n();
 
   useEffect(() => {
     window.aboutAPI?.getAppVersion().then(setAppVersion).catch(console.error);
   }, []);
 
+  const unknown = t("about.version.unknown");
+
   return (
     <div style={{ padding: "2rem", fontFamily: "var(--app-font-family, system-ui)" }}>
-      <h2>About</h2>
-      <p>App Version: {appVersion || "unknown"}</p>
-      <p>Node Version: {nodeVersion}</p>
-      <p>Electron Version: {electronVersion}</p>
-      <p>Chrome Version: {chromeVersion}</p>
+      <h2>{t("about.title")}</h2>
+      <p>
+        {t("about.version.app")}: {appVersion || unknown}
+      </p>
+      <p>
+        {t("about.version.node")}: {nodeVersion || unknown}
+      </p>
+      <p>
+        {t("about.version.electron")}: {electronVersion || unknown}
+      </p>
+      <p>
+        {t("about.version.chrome")}: {chromeVersion || unknown}
+      </p>
     </div>
   );
 };

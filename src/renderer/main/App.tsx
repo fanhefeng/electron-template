@@ -1,27 +1,25 @@
 import { useEffect, useState } from "react";
 import type { ProgressInfo } from "electron-updater";
 import type { DeepLinkPayload } from "@shared/deepLink";
+import { useI18n } from "../hooks/useI18n";
 
-const UpdateStatus = () => {
-  const [status, setStatus] = useState("Idle");
+const UpdateStatus = ({ t }: { t: (key: string, params?: Record<string, string>) => string }) => {
+  const [status, setStatus] = useState("");
 
   useEffect(() => {
     const api = window.electronAPI;
+    if (!api) return;
 
-    if (!api) {
-      return;
-    }
-
-    const handleAvailable = () => setStatus("Update available");
-    const handleNotAvailable = () => setStatus("No updates available");
+    const handleAvailable = () => setStatus(t("update.status.available"));
+    const handleNotAvailable = () => setStatus(t("update.status.notAvailable"));
     const handleError = (_event: unknown, message: string) => {
-      setStatus(`Error: ${message}`);
+      setStatus(t("update.status.error", { message }));
     };
-    const handleDownloaded = () => setStatus("Update downloaded");
-    const handlePending = () => setStatus("Downloading update…");
+    const handleDownloaded = () => setStatus(t("update.status.downloaded"));
+    const handlePending = () => setStatus(t("update.status.downloading"));
     const handleProgress = (_event: unknown, progress: ProgressInfo) => {
       if (typeof progress.percent === "number") {
-        setStatus(`Downloading update… ${progress.percent.toFixed(0)}%`);
+        setStatus(t("update.status.downloadingPercent", { percent: progress.percent.toFixed(0) }));
       }
     };
 
@@ -40,12 +38,13 @@ const UpdateStatus = () => {
       api.offUpdateDownloadPending(handlePending);
       api.offUpdateDownloadProgress(handleProgress);
     };
-  }, []);
+  }, [t]);
 
-  return <p>Update status: {status}</p>;
+  return <p>{status || t("update.status.idle")}</p>;
 };
 
 export const App = () => {
+  const { t } = useI18n();
   const [deepLinkInfo, setDeepLinkInfo] = useState<string>("");
 
   useEffect(() => {
@@ -68,23 +67,27 @@ export const App = () => {
 
   return (
     <div style={{ padding: "2rem", fontFamily: "var(--app-font-family, system-ui)" }}>
-      <h1>Electron Template</h1>
-      <div style={{ display: "flex", gap: "1rem", marginBottom: "1.5rem" }}>
+      <h1>{t("app.title")}</h1>
+      <div style={{ display: "flex", gap: "1rem", marginBlockEnd: "1.5rem" }}>
         <button type="button" onClick={() => window.electronAPI?.checkForUpdates()}>
-          Check for Updates
+          {t("update.button.check")}
         </button>
         <button type="button" onClick={() => window.electronAPI?.applyUpdate()}>
-          Apply Update
+          {t("update.button.apply")}
         </button>
       </div>
-      <UpdateStatus />
-      {deepLinkInfo && <p>Deep Link: {deepLinkInfo}</p>}
-      <div style={{ display: "flex", gap: "1rem", marginTop: "2rem" }}>
+      <UpdateStatus t={t} />
+      {deepLinkInfo && (
+        <p>
+          {t("deepLink.label")}: {deepLinkInfo}
+        </p>
+      )}
+      <div style={{ display: "flex", gap: "1rem", marginBlockStart: "2rem" }}>
         <button type="button" onClick={() => handleOpenWindow("about")}>
-          About
+          {t("nav.about")}
         </button>
         <button type="button" onClick={() => handleOpenWindow("settings")}>
-          Settings
+          {t("nav.settings")}
         </button>
       </div>
     </div>

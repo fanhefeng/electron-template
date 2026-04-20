@@ -2,11 +2,13 @@ import type { IpcMainInvokeEvent } from "electron";
 import { app, BrowserWindow } from "electron";
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { IPC_CHANNELS } from "../../../shared/ipcChannels";
 import { SYSTEM_FONT_ID } from "../../../shared/fonts";
 import type { AppSettings, FontPreference } from "../../../shared/settings";
 import { defaultSettings } from "../../../shared/settings";
 import { logger } from "../../services/logger-service";
 import { fontService } from "../../services/font-service";
+import { i18nService } from "../../services/i18n-service";
 
 let cachedSettings: AppSettings = { ...defaultSettings };
 let loadPromise: Promise<void> | null = null;
@@ -31,6 +33,7 @@ const ensureLoaded = (): Promise<void> => {
     } catch {
       cachedSettings = { ...defaultSettings };
     }
+    i18nService.setLocale(cachedSettings.locale);
   })();
 
   return loadPromise;
@@ -73,10 +76,13 @@ export const updateSettings = async (
     logger.error("Failed to save settings", error);
     throw new Error("Failed to save settings", { cause: error });
   }
+  if (settings.locale !== undefined) {
+    i18nService.setLocale(settings.locale);
+  }
   BrowserWindow.getAllWindows().forEach((win) => {
     if (!win.isDestroyed()) {
-      logger.info(`Send to window (id=${win.id}): settings:updated`);
-      win.webContents.send("settings:updated", cachedSettings);
+      logger.info(`Send to window (id=${win.id}): ${IPC_CHANNELS.SETTINGS_UPDATED}`);
+      win.webContents.send(IPC_CHANNELS.SETTINGS_UPDATED, cachedSettings);
     }
   });
 

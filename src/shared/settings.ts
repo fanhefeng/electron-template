@@ -1,4 +1,5 @@
 import { SYSTEM_FONT_ID } from "./fonts";
+import type { LocalePreference } from "./locales";
 
 export type FontPreference = typeof SYSTEM_FONT_ID | string;
 
@@ -7,6 +8,7 @@ export interface AppSettings {
   autoLaunch: boolean;
   enableNotifications: boolean;
   fontFamily: FontPreference;
+  locale: LocalePreference;
 }
 
 export const defaultSettings: AppSettings = {
@@ -14,4 +16,5 @@ export const defaultSettings: AppSettings = {
   autoLaunch: false,
   enableNotifications: true,
   fontFamily: SYSTEM_FONT_ID,
+  locale: "system",
 };

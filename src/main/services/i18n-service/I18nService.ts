@@ -1,38 +1,45 @@
 import { app } from "electron";
 import { logger } from "../logger-service";
-
-export type MessageDictionary = Record<string, string>;
+import { getMessages, resolveLocale } from "../../../shared/locales";
+import type { SupportedLocale, LocalePreference } from "../../../shared/locales";
 
 export class I18nService {
-  private locale: string = this.detectLocale();
-  private readonly dictionaries = new Map<string, MessageDictionary>();
+  private locale: SupportedLocale = this.detectLocale();
 
-  private detectLocale(): string {
+  private detectLocale(): SupportedLocale {
     try {
-      return app.getLocale();
-    } catch (error) {
-      logger.warn("Failed to detect locale, defaulting to en", error);
+      return resolveLocale(app.getLocale());
+    } catch {
       return "en";
     }
   }
 
-  getLocale(): string {
+  getLocale(): SupportedLocale {
     return this.locale;
   }
 
-  setLocale(locale: string): void {
-    this.locale = locale;
-    logger.info("Locale updated", locale);
+  setLocale(preference: LocalePreference): void {
+    if (preference === "system") {
+      this.locale = this.detectLocale();
+    } else {
+      this.locale = preference;
+    }
+    logger.info(`Locale updated: ${this.locale}`);
   }
 
-  registerMessages(locale: string, messages: MessageDictionary): void {
-    const existing = this.dictionaries.get(locale) ?? {};
-    this.dictionaries.set(locale, { ...existing, ...messages });
+  getMessages(): Record<string, string> {
+    return getMessages(this.locale);
   }
 
-  translate(key: string): string {
-    const messages = this.dictionaries.get(this.locale);
-    return messages?.[key] ?? key;
+  t(key: string, params?: Record<string, string>): string {
+    const messages = this.getMessages();
+    let value = messages[key] ?? key;
+    if (params) {
+      for (const [k, v] of Object.entries(params)) {
+        value = value.replaceAll(`{${k}}`, v);
+      }
+    }
+    return value;
   }
 }
 
