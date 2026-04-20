@@ -1,6 +1,6 @@
-import { BrowserWindow, Notification, clipboard } from "electron";
+import { Notification, clipboard } from "electron";
 import { promises as fs } from "node:fs";
-import type { NativeImage } from "electron";
+import type { NativeImage, BrowserWindow } from "electron";
 import { logger } from "../logger-service";
 import { resourceService } from "../resource-service";
 

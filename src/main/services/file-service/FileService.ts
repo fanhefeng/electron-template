@@ -1,4 +1,5 @@
-import { BrowserWindow, dialog } from "electron";
+import type { BrowserWindow } from "electron";
+import { dialog } from "electron";
 import { promises as fs } from "node:fs";
 import { logger } from "../logger-service";
 

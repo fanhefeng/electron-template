@@ -1,4 +1,5 @@
-import { app, BrowserWindow, BrowserWindowConstructorOptions } from "electron";
+import type { BrowserWindowConstructorOptions } from "electron";
+import { app, BrowserWindow } from "electron";
 import { logger } from "../services/logger-service";
 import { resourceService } from "../services/resource-service";
 

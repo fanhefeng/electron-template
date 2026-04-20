@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type { ProgressInfo } from "electron-updater";
-import { IPC_CHANNELS, OpenWindowPayload } from "../shared/ipcChannels";
+import type { OpenWindowPayload } from "../shared/ipcChannels";
+import { IPC_CHANNELS } from "../shared/ipcChannels";
 import type { DeepLinkPayload } from "../shared/deepLink";
 import { initializeAppearanceBridge } from "./appearanceBridge";
 

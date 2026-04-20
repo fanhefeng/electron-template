@@ -1,4 +1,5 @@
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import type { FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { AppSettings } from "@shared/settings";
 import type { FontAsset } from "@shared/fonts";
 import { SYSTEM_FONT_ID, SYSTEM_FONT_STACK } from "@shared/fonts";

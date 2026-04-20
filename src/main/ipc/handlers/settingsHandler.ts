@@ -1,8 +1,10 @@
-import { app, BrowserWindow, IpcMainInvokeEvent } from "electron";
+import type { IpcMainInvokeEvent } from "electron";
+import { app, BrowserWindow } from "electron";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { SYSTEM_FONT_ID } from "../../../shared/fonts";
-import { AppSettings, defaultSettings, FontPreference } from "../../../shared/settings";
+import type { AppSettings, FontPreference } from "../../../shared/settings";
+import { defaultSettings } from "../../../shared/settings";
 import { logger } from "../../services/logger-service";
 import { fontService } from "../../services/font-service";
 

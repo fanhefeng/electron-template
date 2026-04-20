@@ -1,4 +1,5 @@
-import { BrowserWindow, dialog, app } from "electron";
+import type { BrowserWindow } from "electron";
+import { dialog, app } from "electron";
 import { autoUpdater } from "electron-updater";
 import type { ProgressInfo } from "electron-updater";
 import { logger } from "../logger-service";

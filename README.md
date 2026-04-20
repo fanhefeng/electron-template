@@ -24,15 +24,15 @@ npm run dev
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start dev environment (watchers + Vite + Electron) |
-| `npm run build` | Production build |
-| `npm run package` | Build + package installer (DMG / NSIS / AppImage) |
-| `npm run lint` | ESLint check |
-| `npm run lint:fix` | ESLint auto-fix |
-| `npm run format` | Prettier formatting |
-| `npm run typecheck` | TypeScript type checking |
+| Command             | Description                                        |
+| ------------------- | -------------------------------------------------- |
+| `npm run dev`       | Start dev environment (watchers + Vite + Electron) |
+| `npm run build`     | Production build                                   |
+| `npm run package`   | Build + package installer (DMG / NSIS / AppImage)  |
+| `npm run lint`      | ESLint check                                       |
+| `npm run lint:fix`  | ESLint auto-fix                                    |
+| `npm run format`    | Prettier formatting                                |
+| `npm run typecheck` | TypeScript type checking                           |
 
 ## Project Structure
 

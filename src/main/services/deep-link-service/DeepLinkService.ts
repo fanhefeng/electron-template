@@ -1,4 +1,5 @@
-import { app, BrowserWindow } from "electron";
+import type { BrowserWindow } from "electron";
+import { app } from "electron";
 import { logger } from "../logger-service";
 import { DEEP_LINK_SCHEME } from "../../../shared/deepLink";
 import { IPC_CHANNELS } from "../../../shared/ipcChannels";
@@ -12,9 +13,7 @@ export class DeepLinkService {
   register(): void {
     if (!app.isPackaged) {
       // 开发模式下需要传入可执行路径才能正确注册协议
-      app.setAsDefaultProtocolClient(DEEP_LINK_SCHEME, process.execPath, [
-        process.argv[1],
-      ]);
+      app.setAsDefaultProtocolClient(DEEP_LINK_SCHEME, process.execPath, [process.argv[1]]);
     } else {
       app.setAsDefaultProtocolClient(DEEP_LINK_SCHEME);
     }
@@ -97,10 +96,7 @@ export class DeepLinkService {
     return "main";
   }
 
-  private sendToRenderer(
-    browserWindow: BrowserWindow,
-    payload: DeepLinkPayload
-  ): void {
+  private sendToRenderer(browserWindow: BrowserWindow, payload: DeepLinkPayload): void {
     if (!browserWindow.isDestroyed()) {
       browserWindow.webContents.send(IPC_CHANNELS.DEEP_LINK_NAVIGATE, payload);
     }

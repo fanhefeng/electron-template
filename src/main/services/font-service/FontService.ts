@@ -2,7 +2,8 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { logger } from "../logger-service";
 import { resourceService } from "../resource-service";
-import { FontAsset, FontFormat, SYSTEM_FONT_ID, SYSTEM_FONT_STACK } from "../../../shared/fonts";
+import type { FontAsset, FontFormat } from "../../../shared/fonts";
+import { SYSTEM_FONT_ID, SYSTEM_FONT_STACK } from "../../../shared/fonts";
 import { protocolService } from "../protocol-service";
 
 const SUPPORTED_FORMATS: Record<string, FontFormat> = {

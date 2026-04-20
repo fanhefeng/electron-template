@@ -1,4 +1,5 @@
-import { BrowserWindow, IpcMainInvokeEvent } from "electron";
+import type { IpcMainInvokeEvent } from "electron";
+import { BrowserWindow } from "electron";
 import { logger } from "../../services/logger-service";
 import { updateService } from "../../services/update-service";
 import type { SystemService } from "../../services/system-service/SystemService";

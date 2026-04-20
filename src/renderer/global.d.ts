@@ -1,4 +1,5 @@
 import type { AppSettings } from "@shared/settings";
+import type { FontAsset } from "@shared/fonts";
 import type { OpenWindowPayload } from "@shared/ipcChannels";
 import type { DeepLinkPayload } from "@shared/deepLink";
 import type { ProgressInfo } from "electron-updater";
@@ -33,7 +34,7 @@ declare global {
     settingsAPI?: {
       getSettings: () => Promise<AppSettings>;
       updateSettings: (settings: Partial<AppSettings>) => Promise<AppSettings>;
-      getAvailableFonts: () => Promise<import("@shared/fonts").FontAsset[]>;
+      getAvailableFonts: () => Promise<FontAsset[]>;
     };
   }
 }
