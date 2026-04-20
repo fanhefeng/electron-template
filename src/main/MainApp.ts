@@ -10,6 +10,7 @@ import { themeService } from "./services/theme-service";
 import { WindowManager } from "./window-manager/WindowManager";
 import { SystemService } from "./services/system-service/SystemService";
 import { protocolService } from "./services/protocol-service";
+import { deepLinkService } from "./services/deep-link-service";
 
 export class MainApp {
   private readonly windowManager = new WindowManager();
@@ -21,6 +22,8 @@ export class MainApp {
 
     await app.whenReady();
     protocolService.registerFontProtocol();
+    deepLinkService.register();
+    deepLinkService.setWindowManager(this.windowManager);
     themeService.setTheme("system");
     downloadService.monitorDownloads();
 

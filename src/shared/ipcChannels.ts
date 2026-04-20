@@ -6,6 +6,7 @@ export const IPC_CHANNELS = {
   LIST_FONTS: "fonts/list",
   GET_APP_VERSION: "app/version",
   OPEN_WINDOW: "window/open",
+  DEEP_LINK_NAVIGATE: "deep-link/navigate",
 } as const;
 
 export type IpcChannel = (typeof IPC_CHANNELS)[keyof typeof IPC_CHANNELS];

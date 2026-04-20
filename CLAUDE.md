@@ -45,6 +45,13 @@ Multi-process Electron app: main process + per-window renderer processes, bridge
 - **Renderer**: Vite 8 (React)
 - Separate `tsconfig.*.json` per process. Build output: `dist/`, packaged apps: `dist_electron/`
 
+## Workflow Rules
+
+- **每完成一个功能后必须进行 code review**：运行 `typecheck` + `lint` + 全面审查代码逻辑、类型安全、边界情况和潜在 bug，修复所有发现的问题后再继续下一个任务。
+- **页面 UI 与 app 功能解耦**：页面只负责布局和展示，所有功能通过引入 API（preload 暴露的接口）实现，不在 renderer 中直接操作业务逻辑。
+- **国际化优先**：页面中所有用户可见文本、标签、占位符等均不能写死，必须预留国际化（i18n）接入点。
+- **CSS 逻辑布局**：使用逻辑属性（`inline-start/end`、`block-start/end`、`margin-inline`、`padding-block` 等），禁止使用物理方向属性（`left`、`right`、`top`、`bottom`、`margin-left` 等），以支持 RTL 语言。
+
 ## Coding Conventions
 
 - Prettier: double quotes, semicolons, 120 char width, ES5 trailing commas

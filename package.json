@@ -78,6 +78,12 @@
       "provider": "generic",
       "url": "http://localhost:8080/updates"
     },
+    "protocols": [
+      {
+        "name": "ElectronTemplate",
+        "schemes": ["electrontemplate"]
+      }
+    ],
     "mac": {
       "icon": "resources/icons/icon.icns",
       "category": "public.app-category.productivity",

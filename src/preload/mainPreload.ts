@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type { ProgressInfo } from "electron-updater";
 import { IPC_CHANNELS, OpenWindowPayload } from "../shared/ipcChannels";
+import type { DeepLinkPayload } from "../shared/deepLink";
 import { initializeAppearanceBridge } from "./appearanceBridge";
 
 initializeAppearanceBridge();
@@ -25,4 +26,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.removeListener("update-download-progress", callback),
   onUpdateDownloaded: (callback: () => void) => ipcRenderer.on("update-downloaded", callback),
   offUpdateDownloaded: (callback: () => void) => ipcRenderer.removeListener("update-downloaded", callback),
+  onDeepLink: (callback: (_event: Electron.IpcRendererEvent, payload: DeepLinkPayload) => void) =>
+    ipcRenderer.on(IPC_CHANNELS.DEEP_LINK_NAVIGATE, callback),
+  offDeepLink: (callback: (_event: Electron.IpcRendererEvent, payload: DeepLinkPayload) => void) =>
+    ipcRenderer.removeListener(IPC_CHANNELS.DEEP_LINK_NAVIGATE, callback),
 });

@@ -1,5 +1,6 @@
 import type { AppSettings } from "@shared/settings";
 import type { OpenWindowPayload } from "@shared/ipcChannels";
+import type { DeepLinkPayload } from "@shared/deepLink";
 import type { ProgressInfo } from "electron-updater";
 
 declare global {
@@ -20,6 +21,8 @@ declare global {
       offUpdateDownloadPending: (listener: () => void) => void;
       offUpdateDownloadProgress: (listener: (_event: unknown, progress: ProgressInfo) => void) => void;
       offUpdateDownloaded: (listener: () => void) => void;
+      onDeepLink: (listener: (_event: unknown, payload: DeepLinkPayload) => void) => void;
+      offDeepLink: (listener: (_event: unknown, payload: DeepLinkPayload) => void) => void;
     };
     aboutAPI?: {
       getAppVersion: () => Promise<string>;

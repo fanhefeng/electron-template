@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { ProgressInfo } from "electron-updater";
+import type { DeepLinkPayload } from "@shared/deepLink";
 
 const UpdateStatus = () => {
   const [status, setStatus] = useState("Idle");
@@ -45,6 +46,22 @@ const UpdateStatus = () => {
 };
 
 export const App = () => {
+  const [deepLinkInfo, setDeepLinkInfo] = useState<string>("");
+
+  useEffect(() => {
+    const api = window.electronAPI;
+    if (!api) return;
+
+    const handleDeepLink = (_event: unknown, payload: DeepLinkPayload) => {
+      setDeepLinkInfo(`path=${payload.path} params=${JSON.stringify(payload.params)}`);
+    };
+
+    api.onDeepLink(handleDeepLink);
+    return () => {
+      api.offDeepLink(handleDeepLink);
+    };
+  }, []);
+
   const handleOpenWindow = (windowName: "about" | "settings") => {
     window.electronAPI?.openWindow(windowName);
   };
@@ -61,6 +78,7 @@ export const App = () => {
         </button>
       </div>
       <UpdateStatus />
+      {deepLinkInfo && <p>Deep Link: {deepLinkInfo}</p>}
       <div style={{ display: "flex", gap: "1rem", marginTop: "2rem" }}>
         <button type="button" onClick={() => handleOpenWindow("about")}>
           About
