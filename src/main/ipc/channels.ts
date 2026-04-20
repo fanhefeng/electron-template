@@ -1,5 +1,5 @@
-import { IPC_CHANNELS } from '../../shared/ipcChannels';
+import { IPC_CHANNELS } from "../../shared/ipcChannels";
 
 export const IPC = {
-  ...IPC_CHANNELS
+  ...IPC_CHANNELS,
 };

@@ -1,20 +1,13 @@
 {
   "compilerOptions": {
-    "target": "ES2021",
+    "target": "ES2022",
     "module": "ESNext",
-    "moduleResolution": "Node",
     "strict": true,
     "jsx": "react-jsx",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "isolatedModules": true,
-    "baseUrl": "./src",
-    "paths": {
-      "@main/*": ["main/*"],
-      "@renderer/*": ["renderer/*"],
-      "@shared/*": ["shared/*"]
-    }
+    "isolatedModules": true
   }
 }

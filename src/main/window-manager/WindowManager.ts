@@ -1,8 +1,8 @@
-import type { BrowserWindow } from 'electron';
-import { logger } from '../services/logger-service';
-import type { AbstractWindow } from './AbstractWindow';
+import type { BrowserWindow } from "electron";
+import { logger } from "../services/logger-service";
+import type { AbstractWindow } from "./AbstractWindow";
 
-export type WindowIdentifier = 'main' | 'about' | 'settings';
+export type WindowIdentifier = "main" | "about" | "settings";
 
 type WindowFactory = () => AbstractWindow;
 
@@ -19,7 +19,7 @@ export class WindowManager {
     this.registry.set(id, {
       factory,
       instance: null,
-      browserWindow: null
+      browserWindow: null,
     });
   }
 
@@ -38,19 +38,19 @@ export class WindowManager {
     const windowInstance = registeredWindow.factory();
     const browserWindow = windowInstance.create();
 
-    browserWindow.once('closed', () => {
+    browserWindow.once("closed", () => {
       logger.info(`Clean up window instance: ${id}`);
       this.registry.set(id, {
         ...registeredWindow,
         instance: null,
-        browserWindow: null
+        browserWindow: null,
       });
     });
 
     this.registry.set(id, {
       factory: registeredWindow.factory,
       instance: windowInstance,
-      browserWindow
+      browserWindow,
     });
 
     return browserWindow;

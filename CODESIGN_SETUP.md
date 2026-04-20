@@ -25,6 +25,7 @@ security find-identity -v -p codesigning
 ```
 
 输出示例：
+
 ```
 1) ABCD1234... "Developer ID Application: Your Name (TEAM_ID)"
 ```
@@ -72,6 +73,7 @@ codesign --verify --deep --strict --verbose=2 dist_electron/mac/ElectronTemplate
 #### 当前配置
 
 `package.json` 已配置为使用 ad-hoc 签名：
+
 ```json
 {
   "build": {
@@ -114,6 +116,7 @@ codesign --force --sign - dist_electron/ElectronTemplate-0.2.0.dmg
 ```
 
 **警告**：
+
 - macOS 会显示安全警告
 - 自动更新功能无法正常工作
 - 用户需要手动允许运行
@@ -196,6 +199,7 @@ npm run start-update-server
 ### 5. 在应用中检查更新
 
 应用应该能够：
+
 - 检测到新版本
 - 下载更新
 - 成功安装（如果签名正确）
@@ -205,6 +209,7 @@ npm run start-update-server
 ### Q: 签名后仍然报错？
 
 确保新旧版本使用相同的签名：
+
 ```bash
 # 检查旧版本签名
 codesign -dv /Applications/ElectronTemplate.app
@@ -222,6 +227,7 @@ codesign -dv dist_electron/mac/ElectronTemplate.app
 ### Q: 能否跳过签名验证？
 
 macOS 系统级限制，无法完全跳过。只能：
+
 - 使用正确的签名
 - 或手动安装更新（不使用自动更新）
 

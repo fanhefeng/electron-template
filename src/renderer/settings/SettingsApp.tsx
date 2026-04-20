@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import type { AppSettings } from "@shared/settings";
 import type { FontAsset } from "@shared/fonts";
 import { SYSTEM_FONT_ID, SYSTEM_FONT_STACK } from "@shared/fonts";
@@ -10,20 +10,19 @@ const initialSettings: AppSettings = {
   fontFamily: SYSTEM_FONT_ID,
 };
 
-let hasLoadedInitialData = false;
-
 export const SettingsApp = () => {
   const [settings, setSettings] = useState<AppSettings>(initialSettings);
   const [fonts, setFonts] = useState<FontAsset[]>([]);
+  const dataLoadedRef = useRef(false);
 
   useEffect(() => {
     const api = window.settingsAPI;
 
-    if (!api || hasLoadedInitialData) {
+    if (!api || dataLoadedRef.current) {
       return;
     }
 
-    hasLoadedInitialData = true;
+    dataLoadedRef.current = true;
 
     api
       .getSettings()

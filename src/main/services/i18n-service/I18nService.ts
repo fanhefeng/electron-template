@@ -1,5 +1,5 @@
-import { app } from 'electron';
-import { logger } from '../logger-service';
+import { app } from "electron";
+import { logger } from "../logger-service";
 
 export type MessageDictionary = Record<string, string>;
 
@@ -11,8 +11,8 @@ export class I18nService {
     try {
       return app.getLocale();
     } catch (error) {
-      logger.warn('Failed to detect locale, defaulting to en', error);
-      return 'en';
+      logger.warn("Failed to detect locale, defaulting to en", error);
+      return "en";
     }
   }
 
@@ -22,7 +22,7 @@ export class I18nService {
 
   setLocale(locale: string): void {
     this.locale = locale;
-    logger.info('Locale updated', locale);
+    logger.info("Locale updated", locale);
   }
 
   registerMessages(locale: string, messages: MessageDictionary): void {

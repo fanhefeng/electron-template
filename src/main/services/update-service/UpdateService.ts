@@ -16,20 +16,20 @@ export class UpdateService {
     autoUpdater.autoDownload = false;
     autoUpdater.autoInstallOnAppQuit = false;
     autoUpdater.logger = logger;
-    
+
     // 开发环境配置
     const isDev = !app.isPackaged;
     if (isDev) {
       // 使用开发环境更新配置文件
-      const devUpdateConfig = path.join(process.cwd(), 'dev-app-update.yml');
+      const devUpdateConfig = path.join(process.cwd(), "dev-app-update.yml");
       autoUpdater.updateConfigPath = devUpdateConfig;
       autoUpdater.forceDevUpdateConfig = true;
-      
+
       logger.info(`Development mode: using update config from ${devUpdateConfig}`);
     }
-    
-    // @ts-ignore - allowDowngrade 允许版本降级（用于测试）
-    autoUpdater.allowDowngrade = isDev;
+
+    // allowDowngrade 允许版本降级（用于测试）
+    (autoUpdater as unknown as Record<string, unknown>).allowDowngrade = isDev;
   }
 
   checkForUpdates(browserWindow?: BrowserWindow): void {
@@ -43,9 +43,9 @@ export class UpdateService {
     logger.info("Checking for updates");
     autoUpdater.checkForUpdates().catch((error) => {
       logger.error("Failed to check for updates", error);
-      this.window?.webContents.send("update-error", (error as Error).message);
+      this.window?.webContents.send("update-error", error instanceof Error ? error.message : String(error));
       if (this.window && this.window === browserWindow) {
-        dialog.showErrorBox("Update error", (error as Error).message);
+        dialog.showErrorBox("Update error", error instanceof Error ? error.message : String(error));
       }
     });
     logger.info("Update check initiated");
@@ -109,7 +109,7 @@ export class UpdateService {
   private handleError = (error: unknown): void => {
     logger.error("Update error", error);
     this.isDownloading = false;
-    this.window?.webContents.send("update-error", (error as Error).message);
+    this.window?.webContents.send("update-error", error instanceof Error ? error.message : String(error));
     this.systemService?.showNotification("更新失败", "更新检查过程中出现问题。");
   };
 
@@ -132,7 +132,7 @@ export class UpdateService {
     autoUpdater.downloadUpdate().catch((error) => {
       this.isDownloading = false;
       logger.error("Failed to download update", error);
-      this.window?.webContents.send("update-error", (error as Error).message);
+      this.window?.webContents.send("update-error", error instanceof Error ? error.message : String(error));
       this.systemService?.showNotification("下载失败", "无法下载更新包。");
     });
   }

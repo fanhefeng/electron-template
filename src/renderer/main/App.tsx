@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
-import type { ProgressInfo } from 'electron-updater';
+import { useEffect, useState } from "react";
+import type { ProgressInfo } from "electron-updater";
 
 const UpdateStatus = () => {
-  const [status, setStatus] = useState('Idle');
+  const [status, setStatus] = useState("Idle");
 
   useEffect(() => {
     const api = window.electronAPI;
@@ -11,16 +11,15 @@ const UpdateStatus = () => {
       return;
     }
 
-    const handleAvailable = () => setStatus('Update available');
-    const handleNotAvailable = () => setStatus('No updates available');
-    // const handleError = (_event: unknown, message: string) => setStatus(`Error: ${message}`);
+    const handleAvailable = () => setStatus("Update available");
+    const handleNotAvailable = () => setStatus("No updates available");
     const handleError = (_event: unknown, message: string) => {
       setStatus(`Error: ${message}`);
-    }
-    const handleDownloaded = () => setStatus('Update downloaded');
-    const handlePending = () => setStatus('Downloading update…');
+    };
+    const handleDownloaded = () => setStatus("Update downloaded");
+    const handlePending = () => setStatus("Downloading update…");
     const handleProgress = (_event: unknown, progress: ProgressInfo) => {
-      if (typeof progress.percent === 'number') {
+      if (typeof progress.percent === "number") {
         setStatus(`Downloading update… ${progress.percent.toFixed(0)}%`);
       }
     };
@@ -33,7 +32,12 @@ const UpdateStatus = () => {
     api.onUpdateDownloadProgress(handleProgress);
 
     return () => {
-      // electron does not automatically remove listeners, but for template we omit cleanup for brevity
+      api.offUpdateAvailable(handleAvailable);
+      api.offUpdateNotAvailable(handleNotAvailable);
+      api.offUpdateError(handleError);
+      api.offUpdateDownloaded(handleDownloaded);
+      api.offUpdateDownloadPending(handlePending);
+      api.offUpdateDownloadProgress(handleProgress);
     };
   }, []);
 
@@ -41,14 +45,14 @@ const UpdateStatus = () => {
 };
 
 export const App = () => {
-  const handleOpenWindow = (windowName: 'about' | 'settings') => {
+  const handleOpenWindow = (windowName: "about" | "settings") => {
     window.electronAPI?.openWindow(windowName);
   };
 
   return (
-    <div style={{ padding: '2rem', fontFamily: 'var(--app-font-family, system-ui)' }}>
+    <div style={{ padding: "2rem", fontFamily: "var(--app-font-family, system-ui)" }}>
       <h1>Electron Template</h1>
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+      <div style={{ display: "flex", gap: "1rem", marginBottom: "1.5rem" }}>
         <button type="button" onClick={() => window.electronAPI?.checkForUpdates()}>
           Check for Updates
         </button>
@@ -57,11 +61,11 @@ export const App = () => {
         </button>
       </div>
       <UpdateStatus />
-      <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
-        <button type="button" onClick={() => handleOpenWindow('about')}>
+      <div style={{ display: "flex", gap: "1rem", marginTop: "2rem" }}>
+        <button type="button" onClick={() => handleOpenWindow("about")}>
           About
         </button>
-        <button type="button" onClick={() => handleOpenWindow('settings')}>
+        <button type="button" onClick={() => handleOpenWindow("settings")}>
           Settings
         </button>
       </div>

@@ -1,1 +1,1 @@
-export * from './UpdateService';
+export * from "./UpdateService";

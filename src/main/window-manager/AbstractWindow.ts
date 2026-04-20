@@ -1,6 +1,6 @@
-import { app, BrowserWindow, BrowserWindowConstructorOptions } from 'electron';
-import { logger } from '../services/logger-service';
-import { resourceService } from '../services/resource-service';
+import { app, BrowserWindow, BrowserWindowConstructorOptions } from "electron";
+import { logger } from "../services/logger-service";
+import { resourceService } from "../services/resource-service";
 
 export interface WindowOptions {
   name: string;
@@ -26,23 +26,23 @@ export abstract class AbstractWindow {
         preload: this.options.preload,
         contextIsolation: true,
         nodeIntegration: false,
-        sandbox: false
+        sandbox: true,
       },
-      ...this.options.windowOptions
+      ...this.options.windowOptions,
     });
 
-    this.browserWindow.on('ready-to-show', () => {
+    this.browserWindow.on("ready-to-show", () => {
       this.browserWindow?.show();
     });
 
-    this.browserWindow.on('closed', () => {
+    this.browserWindow.on("closed", () => {
       logger.info(`Window closed: ${this.options.name}`);
       this.browserWindow = null;
     });
 
-    this.browserWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
-    this.browserWindow.webContents.on('will-navigate', (event, url) => {
-      const allowed = app.isPackaged ? url.startsWith('file://') : url.startsWith('http://localhost:5173/');
+    this.browserWindow.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
+    this.browserWindow.webContents.on("will-navigate", (event, url) => {
+      const allowed = app.isPackaged ? url.startsWith("file://") : url.startsWith("http://localhost:5173/");
       if (!allowed) {
         event.preventDefault();
         logger.warn(`Blocked navigation in ${this.options.name}: ${url}`);
@@ -68,13 +68,13 @@ export abstract class AbstractWindow {
     }
 
     if (!app.isPackaged) {
-      const base = process.env.ELECTRON_DEV_SERVER_URL ?? 'http://localhost:5173/';
+      const base = process.env.ELECTRON_DEV_SERVER_URL ?? "http://localhost:5173/";
       const devUrl = this.options.url ?? `${base}${this.getHtmlFileName()}`;
       this.browserWindow.loadURL(devUrl).catch((error) => {
         logger.error(`Failed to load URL for ${this.options.name}`, error);
       });
       if (this.shouldOpenDevTools()) {
-        this.browserWindow.webContents.openDevTools({ mode: 'detach' });
+        this.browserWindow.webContents.openDevTools({ mode: "detach" });
       }
     } else {
       const indexHtml = resourceService.getRendererHtmlPath(this.getHtmlFileName());
@@ -85,11 +85,11 @@ export abstract class AbstractWindow {
   }
 
   private shouldOpenDevTools(): boolean {
-    if (typeof this.options.openDevTools === 'boolean') {
+    if (typeof this.options.openDevTools === "boolean") {
       return this.options.openDevTools;
     }
 
-    return process.env.ELECTRON_OPEN_DEVTOOLS === 'true';
+    return process.env.ELECTRON_OPEN_DEVTOOLS === "true";
   }
 
   protected abstract getHtmlFileName(): string;

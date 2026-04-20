@@ -1,8 +1,8 @@
-import { nativeTheme } from 'electron';
-import { logger } from '../logger-service';
-import { resourceService } from '../resource-service';
+import { nativeTheme } from "electron";
+import { logger } from "../logger-service";
+import { resourceService } from "../resource-service";
 
-export type ThemePreference = 'system' | 'light' | 'dark';
+export type ThemePreference = "system" | "light" | "dark";
 
 export class ThemeService {
   private preference: ThemePreference = nativeTheme.themeSource as ThemePreference;
@@ -10,7 +10,7 @@ export class ThemeService {
   setTheme(preference: ThemePreference): void {
     this.preference = preference;
     nativeTheme.themeSource = preference;
-    logger.info('Theme updated', preference);
+    logger.info("Theme updated", preference);
   }
 
   getTheme(): ThemePreference {
@@ -22,7 +22,7 @@ export class ThemeService {
   }
 
   getThemeResourcesPath(theme: ThemePreference = this.preference): string {
-    const target = theme === 'system' ? (this.isDark() ? 'dark' : 'light') : theme;
+    const target = theme === "system" ? (this.isDark() ? "dark" : "light") : theme;
     return resourceService.getThemePath(target);
   }
 }

@@ -2,15 +2,12 @@ import { useEffect, useState } from "react";
 
 export const AboutApp = () => {
   const [appVersion, setAppVersion] = useState<string>("");
-  const [nodeVersion, setNodeVersion] = useState<string>("");
-  const [electronVersion, setElectronVersion] = useState<string>("");
-  const [chromeVersion, setChromeVersion] = useState<string>("");
+  const nodeVersion = window.aboutAPI?.getNodeVersion() ?? "unknown";
+  const electronVersion = window.aboutAPI?.getElectronVersion() ?? "unknown";
+  const chromeVersion = window.aboutAPI?.getChromeVersion() ?? "unknown";
 
   useEffect(() => {
     window.aboutAPI?.getAppVersion().then(setAppVersion).catch(console.error);
-    setNodeVersion(window.aboutAPI?.getNodeVersion() ?? "unknown");
-    setElectronVersion(window.aboutAPI?.getElectronVersion() ?? "unknown");
-    setChromeVersion(window.aboutAPI?.getChromeVersion() ?? "unknown");
   }, []);
 
   return (

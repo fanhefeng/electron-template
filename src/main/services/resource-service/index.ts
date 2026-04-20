@@ -1,1 +1,1 @@
-export * from './ResourceService';
+export * from "./ResourceService";

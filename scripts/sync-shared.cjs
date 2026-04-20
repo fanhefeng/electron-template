@@ -1,14 +1,14 @@
 #!/usr/bin/env node
-const fs = require('fs');
+const fs = require("fs");
 const fsp = fs.promises;
-const path = require('path');
+const path = require("path");
 
-const projectRoot = path.resolve(__dirname, '..');
-const distRoot = path.join(projectRoot, 'dist');
-const sharedDist = path.join(distRoot, 'shared');
+const projectRoot = path.resolve(__dirname, "..");
+const distRoot = path.join(projectRoot, "dist");
+const sharedDist = path.join(distRoot, "shared");
 const targetRoots = [
-  path.join(projectRoot, 'dist', 'main', 'shared'),
-  path.join(projectRoot, 'dist', 'preload', 'shared')
+  path.join(projectRoot, "dist", "main", "shared"),
+  path.join(projectRoot, "dist", "preload", "shared"),
 ];
 
 async function pathExists(directory) {
@@ -43,7 +43,7 @@ async function syncOnce({ log = true } = {}) {
 
   if (!hasSharedDist) {
     if (log) {
-      console.warn('[sync-shared] dist/shared not found; skipping copy');
+      console.warn("[sync-shared] dist/shared not found; skipping copy");
     }
     return;
   }
@@ -57,12 +57,12 @@ async function syncOnce({ log = true } = {}) {
   );
 
   if (log) {
-    console.log('[sync-shared] Copied dist/shared to process outputs');
+    console.log("[sync-shared] Copied dist/shared to process outputs");
   }
 }
 
 async function main() {
-  const watchMode = process.argv.includes('--watch');
+  const watchMode = process.argv.includes("--watch");
   await syncOnce();
 
   if (!watchMode) {
@@ -73,29 +73,25 @@ async function main() {
     await fsp.mkdir(distRoot, { recursive: true });
   }
 
-  const watcher = fs.watch(
-    distRoot,
-    { recursive: true },
-    async (_eventType, filename) => {
-      if (!filename || !filename.startsWith('shared')) {
-        return;
-      }
-
-      try {
-        await syncOnce({ log: false });
-        console.log('[sync-shared] Change detected, copies refreshed');
-      } catch (error) {
-        console.error('[sync-shared] Failed to sync after change', error);
-      }
+  const watcher = fs.watch(distRoot, { recursive: true }, async (_eventType, filename) => {
+    if (!filename || !filename.startsWith("shared")) {
+      return;
     }
-  );
 
-  watcher.on('error', (error) => {
-    console.error('[sync-shared] Watcher error', error);
+    try {
+      await syncOnce({ log: false });
+      console.log("[sync-shared] Change detected, copies refreshed");
+    } catch (error) {
+      console.error("[sync-shared] Failed to sync after change", error);
+    }
+  });
+
+  watcher.on("error", (error) => {
+    console.error("[sync-shared] Watcher error", error);
   });
 }
 
 main().catch((error) => {
-  console.error('[sync-shared] Unhandled error', error);
+  console.error("[sync-shared] Unhandled error", error);
   process.exitCode = 1;
 });

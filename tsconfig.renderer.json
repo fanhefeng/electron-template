@@ -4,12 +4,19 @@
     "outDir": "dist/renderer",
     "rootDir": "src",
     "module": "ESNext",
+    "moduleResolution": "bundler",
     "target": "ESNext",
-    "lib": ["ES2021", "DOM", "DOM.Iterable"],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "types": ["vite/client"],
-    "composite": true
+    "composite": true,
+    "baseUrl": "./src",
+    "paths": {
+      "@main/*": ["main/*"],
+      "@renderer/*": ["renderer/*"],
+      "@shared/*": ["shared/*"]
+    }
   },
-  "include": ["src/renderer/**/*", "src/shared/**/*"],
+  "include": ["src/renderer/**/*"],
   "exclude": ["node_modules"],
   "references": [{ "path": "./tsconfig.shared.json" }]
 }

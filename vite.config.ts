@@ -1,31 +1,33 @@
-import { resolve } from 'path';
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import { resolve } from "path";
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+
+const root = import.meta.dirname;
 
 export default defineConfig({
-  base: './',
-  root: resolve(__dirname, 'src/renderer'),
+  base: "./",
+  root: resolve(root, "src/renderer"),
   plugins: [react()],
   build: {
-    outDir: resolve(__dirname, 'dist/renderer'),
+    outDir: resolve(root, "dist/renderer"),
     emptyOutDir: true,
-    rollupOptions: {
+    rolldownOptions: {
       input: {
-        main: resolve(__dirname, 'src/renderer/main/index.html'),
-        about: resolve(__dirname, 'src/renderer/about/index.html'),
-        settings: resolve(__dirname, 'src/renderer/settings/index.html')
-      }
-    }
+        main: resolve(root, "src/renderer/main/index.html"),
+        about: resolve(root, "src/renderer/about/index.html"),
+        settings: resolve(root, "src/renderer/settings/index.html"),
+      },
+    },
   },
   server: {
     port: 5173,
-    strictPort: true
+    strictPort: true,
   },
   resolve: {
     alias: {
-      '@renderer': resolve(__dirname, 'src/renderer'),
-      '@main': resolve(__dirname, 'src/main'),
-      '@shared': resolve(__dirname, 'src/shared')
-    }
-  }
+      "@renderer": resolve(root, "src/renderer"),
+      "@main": resolve(root, "src/main"),
+      "@shared": resolve(root, "src/shared"),
+    },
+  },
 });

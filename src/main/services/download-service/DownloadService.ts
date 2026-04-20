@@ -1,6 +1,6 @@
-import { session } from 'electron';
-import { logger } from '../logger-service';
-import { resourceService } from '../resource-service';
+import { session } from "electron";
+import { logger } from "../logger-service";
+import { resourceService } from "../resource-service";
 
 export class DownloadService {
   private isRegistered = false;
@@ -17,31 +17,28 @@ export class DownloadService {
 
     const defaultSession = session.defaultSession;
     if (!defaultSession) {
-      logger.warn('No default session available for download monitoring');
+      logger.warn("No default session available for download monitoring");
       return;
     }
 
-    defaultSession.on('will-download', (_event, item) => {
+    defaultSession.on("will-download", (_event, item) => {
       if (this.downloadDirectory) {
-        const targetPath = resourceService.resolveDownloadPath(
-          item.getFilename(),
-          this.downloadDirectory
-        );
+        const targetPath = resourceService.resolveDownloadPath(item.getFilename(), this.downloadDirectory);
         item.setSavePath(targetPath);
-        logger.info('Download path overridden', targetPath);
+        logger.info("Download path overridden", targetPath);
       }
 
-      item.on('done', (_event, state) => {
-        if (state === 'completed') {
-          logger.info('Download completed', item.getFilename());
+      item.on("done", (_event, state) => {
+        if (state === "completed") {
+          logger.info("Download completed", item.getFilename());
         } else {
-          logger.warn('Download failed', { filename: item.getFilename(), state });
+          logger.warn("Download failed", { filename: item.getFilename(), state });
         }
       });
     });
 
     this.isRegistered = true;
-    logger.info('Download monitoring enabled');
+    logger.info("Download monitoring enabled");
   }
 }
 

@@ -1,6 +1,0 @@
-dist
-dist_electron
-build
-node_modules
-coverage
-.DS_Store

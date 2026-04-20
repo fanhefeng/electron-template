@@ -1,15 +1,15 @@
-import { app, BrowserWindow } from 'electron';
-import { registerIpcHandlers } from './ipc/handlers';
-import { AboutWindow } from './windows/AboutWindow';
-import { MainWindow } from './windows/MainWindow';
-import { SettingsWindow } from './windows/SettingsWindow';
-import { registerUpdaterListeners } from './ipc/handlers/updaterHandler';
-import { logger } from './services/logger-service';
-import { downloadService } from './services/download-service';
-import { themeService } from './services/theme-service';
-import { WindowManager } from './window-manager/WindowManager';
-import { SystemService } from './services/system-service/SystemService';
-import { protocolService } from './services/protocol-service';
+import { app, BrowserWindow } from "electron";
+import { registerIpcHandlers } from "./ipc/handlers";
+import { AboutWindow } from "./windows/AboutWindow";
+import { MainWindow } from "./windows/MainWindow";
+import { SettingsWindow } from "./windows/SettingsWindow";
+import { registerUpdaterListeners } from "./ipc/handlers/updaterHandler";
+import { logger } from "./services/logger-service";
+import { downloadService } from "./services/download-service";
+import { themeService } from "./services/theme-service";
+import { WindowManager } from "./window-manager/WindowManager";
+import { SystemService } from "./services/system-service/SystemService";
+import { protocolService } from "./services/protocol-service";
 
 export class MainApp {
   private readonly windowManager = new WindowManager();
@@ -21,31 +21,31 @@ export class MainApp {
 
     await app.whenReady();
     protocolService.registerFontProtocol();
-    themeService.setTheme('system');
+    themeService.setTheme("system");
     downloadService.monitorDownloads();
 
-    const mainWindow = this.windowManager.open('main');
+    const mainWindow = this.windowManager.open("main");
     registerUpdaterListeners(mainWindow, this.systemService);
 
     this.setupAppListeners();
   }
 
   private registerWindows(): void {
-    this.windowManager.register('main', () => new MainWindow());
-    this.windowManager.register('about', () => new AboutWindow());
-    this.windowManager.register('settings', () => new SettingsWindow());
+    this.windowManager.register("main", () => new MainWindow());
+    this.windowManager.register("about", () => new AboutWindow());
+    this.windowManager.register("settings", () => new SettingsWindow());
   }
 
   private setupAppListeners(): void {
-    app.on('activate', () => {
+    app.on("activate", () => {
       if (BrowserWindow.getAllWindows().length === 0) {
-        this.windowManager.open('main');
+        this.windowManager.open("main");
       }
     });
 
-    app.on('window-all-closed', () => {
-      if (process.platform !== 'darwin') {
-        logger.info('All windows closed, quitting app');
+    app.on("window-all-closed", () => {
+      if (process.platform !== "darwin") {
+        logger.info("All windows closed, quitting app");
         app.quit();
       }
     });

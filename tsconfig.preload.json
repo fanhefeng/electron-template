@@ -1,11 +1,12 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "module": "CommonJS",
+    "module": "Node16",
+    "moduleResolution": "node16",
     "outDir": "dist/preload",
     "rootDir": "src",
     "tsBuildInfoFile": "dist/cache/tsconfig.preload.tsbuildinfo",
-    "lib": ["ES2021", "DOM"],
+    "lib": ["ES2022", "DOM"],
     "types": ["node"],
     "composite": true
   },
