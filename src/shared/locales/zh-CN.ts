@@ -32,7 +32,7 @@ export const zhCN: Record<string, string> = {
   "nav.settings": "设置",
 
   // Deep link
-  "deepLink.label": "Deep Link",
+  "deepLink.label": "深度链接",
 
   // Settings page
   "settings.title": "设置",
@@ -45,7 +45,10 @@ export const zhCN: Record<string, string> = {
   "settings.font.preview": "字体预览：敏捷的棕色狐狸跳过了懒狗。",
   "settings.locale.label": "语言",
   "settings.locale.system": "跟随系统",
+  "settings.locale.en": "English",
+  "settings.locale.zhCN": "中文",
   "settings.button.save": "保存设置",
+  "settings.error.saveFailed": "保存设置失败，已恢复更改。",
 
   // About page
   "about.title": "关于",

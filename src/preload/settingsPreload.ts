@@ -3,7 +3,9 @@ import { IPC_CHANNELS } from "../shared/ipcChannels";
 import type { AppSettings } from "../shared/settings";
 import type { FontAsset } from "../shared/fonts";
 import { initializeAppearanceBridge } from "./appearanceBridge";
+import { initializeLogBridge } from "./logBridge";
 
+initializeLogBridge("renderer:settings");
 initializeAppearanceBridge();
 
 contextBridge.exposeInMainWorld("settingsAPI", {

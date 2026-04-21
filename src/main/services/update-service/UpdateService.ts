@@ -4,8 +4,10 @@ import { autoUpdater } from "electron-updater";
 import type { ProgressInfo } from "electron-updater";
 import { logger } from "../logger-service";
 import { i18nService } from "../i18n-service";
-import type { SystemService } from "../system-service/SystemService";
+import type { SystemService } from "../system-service";
 import * as path from "path";
+
+const toErrorMessage = (error: unknown): string => (error instanceof Error ? error.message : String(error));
 
 export class UpdateService {
   private window?: BrowserWindow;
@@ -31,7 +33,7 @@ export class UpdateService {
     }
 
     // allowDowngrade 允许版本降级（用于测试）
-    (autoUpdater as unknown as Record<string, unknown>).allowDowngrade = isDev;
+    Object.defineProperty(autoUpdater, "allowDowngrade", { value: isDev, writable: true });
   }
 
   checkForUpdates(browserWindow?: BrowserWindow): void {
@@ -39,15 +41,19 @@ export class UpdateService {
       this.window = browserWindow;
     }
 
+    if (this.isDownloading) {
+      logger.info("Update download already in progress, skipping check");
+      return;
+    }
+
     this.isDownloaded = false;
-    this.isDownloading = false;
 
     logger.info("Checking for updates");
     autoUpdater.checkForUpdates().catch((error) => {
       logger.error("Failed to check for updates", error);
-      this.window?.webContents.send("update-error", error instanceof Error ? error.message : String(error));
+      this.window?.webContents.send("update-error", toErrorMessage(error));
       if (this.window && this.window === browserWindow) {
-        dialog.showErrorBox("Update error", error instanceof Error ? error.message : String(error));
+        dialog.showErrorBox("Update error", toErrorMessage(error));
       }
     });
     logger.info("Update check initiated");
@@ -81,14 +87,13 @@ export class UpdateService {
     if (this.listenersRegistered) {
       return;
     }
+    this.listenersRegistered = true;
 
     autoUpdater.on("update-available", this.handleUpdateAvailable);
     autoUpdater.on("update-not-available", this.handleUpdateNotAvailable);
     autoUpdater.on("error", this.handleError);
     autoUpdater.on("download-progress", this.handleDownloadProgress);
     autoUpdater.on("update-downloaded", this.handleUpdateDownloaded);
-
-    this.listenersRegistered = true;
   }
 
   private handleUpdateAvailable = (): void => {
@@ -117,7 +122,7 @@ export class UpdateService {
   private handleError = (error: unknown): void => {
     logger.error("Update error", error);
     this.isDownloading = false;
-    this.window?.webContents.send("update-error", error instanceof Error ? error.message : String(error));
+    this.window?.webContents.send("update-error", toErrorMessage(error));
     this.systemService?.showNotification(
       i18nService.t("notification.update.error.title"),
       i18nService.t("notification.update.error.body")
@@ -140,13 +145,24 @@ export class UpdateService {
     );
   };
 
+  cleanup(): void {
+    if (!this.listenersRegistered) return;
+    autoUpdater.off("update-available", this.handleUpdateAvailable);
+    autoUpdater.off("update-not-available", this.handleUpdateNotAvailable);
+    autoUpdater.off("error", this.handleError);
+    autoUpdater.off("download-progress", this.handleDownloadProgress);
+    autoUpdater.off("update-downloaded", this.handleUpdateDownloaded);
+    this.listenersRegistered = false;
+    logger.info("[service:update] cleanup: listeners removed");
+  }
+
   private downloadUpdate(): void {
     this.isDownloading = true;
     logger.info("Starting update download");
     autoUpdater.downloadUpdate().catch((error) => {
       this.isDownloading = false;
       logger.error("Failed to download update", error);
-      this.window?.webContents.send("update-error", error instanceof Error ? error.message : String(error));
+      this.window?.webContents.send("update-error", toErrorMessage(error));
       this.systemService?.showNotification(
         i18nService.t("notification.update.downloadFailed.title"),
         i18nService.t("notification.update.downloadFailed.body")

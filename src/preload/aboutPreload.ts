@@ -1,7 +1,9 @@
 import { contextBridge, ipcRenderer } from "electron";
 import { IPC_CHANNELS } from "../shared/ipcChannels";
 import { initializeAppearanceBridge } from "./appearanceBridge";
+import { initializeLogBridge } from "./logBridge";
 
+initializeLogBridge("renderer:about");
 initializeAppearanceBridge();
 
 contextBridge.exposeInMainWorld("aboutAPI", {

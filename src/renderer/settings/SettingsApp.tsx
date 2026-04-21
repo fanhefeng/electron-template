@@ -2,8 +2,9 @@ import type { FormEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { AppSettings } from "@shared/settings";
 import type { FontAsset } from "@shared/fonts";
-import { SYSTEM_FONT_ID, SYSTEM_FONT_STACK } from "@shared/fonts";
+import { SYSTEM_FONT_ID, SYSTEM_FONT_STACK, buildFontFaceCSS } from "@shared/fonts";
 import { useI18n } from "../hooks/useI18n";
+import { useLogger } from "../hooks/useLogger";
 
 const initialSettings: AppSettings = {
   theme: "light",
@@ -18,6 +19,7 @@ export const SettingsApp = () => {
   const [fonts, setFonts] = useState<FontAsset[]>([]);
   const dataLoadedRef = useRef(false);
   const { t } = useI18n();
+  const logger = useLogger("SettingsApp");
 
   useEffect(() => {
     const api = window.settingsAPI;
@@ -46,25 +48,28 @@ export const SettingsApp = () => {
       document.head.appendChild(styleElement);
     }
 
-    styleElement.textContent = fonts
-      .filter((font) => font.source && font.format)
-      .map(
-        (font) =>
-          `@font-face { font-family: "${font.cssFamily}"; src: url('${font.source}') format('${font.format}'); font-display: swap; }`
-      )
-      .join("\n");
+    styleElement.textContent = buildFontFaceCSS(fonts);
 
     return () => {
       styleElement?.remove();
     };
   }, [fonts]);
 
+  const [saveError, setSaveError] = useState<string>("");
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setSaveError("");
+    logger.submit("Settings form");
+    const previousSettings = { ...settings };
     window.settingsAPI
       ?.updateSettings(settings)
       .then((updated) => setSettings(updated))
-      .catch(console.error);
+      .catch((error) => {
+        logger.error("save-failed", String(error));
+        setSettings(previousSettings);
+        setSaveError(t("settings.error.saveFailed"));
+      });
   };
 
   const currentFont = useMemo(
@@ -81,14 +86,20 @@ export const SettingsApp = () => {
   }, [currentFont]);
 
   return (
-    <form onSubmit={handleSubmit} style={{ padding: "2rem", fontFamily: "var(--app-font-family, system-ui)" }}>
+    <form
+      onSubmit={handleSubmit}
+      style={{ paddingBlock: "2rem", paddingInline: "2rem", fontFamily: "var(--app-font-family, system-ui)" }}
+    >
       <h2>{t("settings.title")}</h2>
 
       <label style={{ display: "block", marginBlockEnd: "1rem" }}>
         {t("settings.theme.label")} &nbsp;
         <select
           value={settings.theme}
-          onChange={(event) => setSettings((prev) => ({ ...prev, theme: event.target.value as "light" | "dark" }))}
+          onChange={(event) => {
+            logger.change("theme select", event.target.value);
+            setSettings((prev) => ({ ...prev, theme: event.target.value as "light" | "dark" }));
+          }}
         >
           <option value="light">{t("settings.theme.light")}</option>
           <option value="dark">{t("settings.theme.dark")}</option>
@@ -99,7 +110,10 @@ export const SettingsApp = () => {
         <input
           type="checkbox"
           checked={settings.autoLaunch}
-          onChange={(event) => setSettings((prev) => ({ ...prev, autoLaunch: event.target.checked }))}
+          onChange={(event) => {
+            logger.change("autoLaunch checkbox", String(event.target.checked));
+            setSettings((prev) => ({ ...prev, autoLaunch: event.target.checked }));
+          }}
         />
         {t("settings.autoLaunch")}
       </label>
@@ -108,7 +122,10 @@ export const SettingsApp = () => {
         <input
           type="checkbox"
           checked={settings.enableNotifications}
-          onChange={(event) => setSettings((prev) => ({ ...prev, enableNotifications: event.target.checked }))}
+          onChange={(event) => {
+            logger.change("notifications checkbox", String(event.target.checked));
+            setSettings((prev) => ({ ...prev, enableNotifications: event.target.checked }));
+          }}
         />
         {t("settings.notifications")}
       </label>
@@ -117,14 +134,15 @@ export const SettingsApp = () => {
         {t("settings.locale.label")}
         <select
           value={settings.locale}
-          onChange={(event) =>
-            setSettings((prev) => ({ ...prev, locale: event.target.value as AppSettings["locale"] }))
-          }
+          onChange={(event) => {
+            logger.change("locale select", event.target.value);
+            setSettings((prev) => ({ ...prev, locale: event.target.value as AppSettings["locale"] }));
+          }}
           style={{ display: "block", marginBlockStart: "0.5rem" }}
         >
           <option value="system">{t("settings.locale.system")}</option>
-          <option value="en">English</option>
-          <option value="zh-CN">中文</option>
+          <option value="en">{t("settings.locale.en")}</option>
+          <option value="zh-CN">{t("settings.locale.zhCN")}</option>
         </select>
       </label>
 
@@ -132,7 +150,10 @@ export const SettingsApp = () => {
         {t("settings.font.label")}
         <select
           value={settings.fontFamily}
-          onChange={(event) => setSettings((prev) => ({ ...prev, fontFamily: event.target.value }))}
+          onChange={(event) => {
+            logger.change("font select", event.target.value);
+            setSettings((prev) => ({ ...prev, fontFamily: event.target.value }));
+          }}
           style={{ display: "block", marginBlockStart: "0.5rem" }}
         >
           {fonts.map((font) => (
@@ -147,7 +168,8 @@ export const SettingsApp = () => {
         style={{
           border: "1px solid #ccc",
           borderRadius: "4px",
-          padding: "0.75rem",
+          paddingBlock: "0.75rem",
+          paddingInline: "0.75rem",
           marginBlockEnd: "1rem",
           fontFamily: previewFontFamily,
         }}
@@ -155,6 +177,7 @@ export const SettingsApp = () => {
         {t("settings.font.preview")}
       </div>
 
+      {saveError && <p style={{ color: "red", marginBlockEnd: "1rem" }}>{saveError}</p>}
       <button type="submit">{t("settings.button.save")}</button>
     </form>
   );

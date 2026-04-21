@@ -35,8 +35,16 @@ export class WindowManager {
       return registeredWindow.browserWindow;
     }
 
-    const windowInstance = registeredWindow.factory();
-    const browserWindow = windowInstance.create();
+    let windowInstance: AbstractWindow;
+    let browserWindow: BrowserWindow;
+
+    try {
+      windowInstance = registeredWindow.factory();
+      browserWindow = windowInstance.create();
+    } catch (error) {
+      logger.error(`Failed to create window: ${id}`, error);
+      throw error;
+    }
 
     browserWindow.once("closed", () => {
       logger.info(`Clean up window instance: ${id}`);

@@ -9,6 +9,7 @@ export const IPC_CHANNELS = {
   DEEP_LINK_NAVIGATE: "deep-link/navigate",
   GET_MESSAGES: "i18n/messages",
   SETTINGS_UPDATED: "settings:updated",
+  LOG_FROM_RENDERER: "log/from-renderer",
 } as const;
 
 export type IpcChannel = (typeof IPC_CHANNELS)[keyof typeof IPC_CHANNELS];

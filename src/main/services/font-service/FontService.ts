@@ -65,10 +65,12 @@ export class FontService {
 
     this.cachedFonts = fonts;
     this.cachedMap = new Map(fonts.map((font) => [font.id, font]));
+    logger.info(`[service:font] listFonts: loaded ${fonts.length} fonts`);
     return fonts;
   }
 
   async getFont(id: string): Promise<FontAsset | undefined> {
+    logger.debug(`[service:font] getFont: ${id}`);
     if (!this.cachedMap) {
       await this.listFonts();
     }

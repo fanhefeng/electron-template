@@ -11,3 +11,14 @@ export interface FontAsset {
   source?: string;
   format?: FontFormat;
 }
+
+const escapeCssString = (value: string): string => value.replace(/[\\'"\n\r]/g, (ch) => `\\${ch}`);
+
+export const buildFontFaceRule = (font: FontAsset): string | null => {
+  if (!font.source || !font.format) return null;
+  const family = escapeCssString(font.cssFamily);
+  const source = escapeCssString(font.source);
+  return `@font-face { font-family: "${family}"; src: url('${source}') format('${font.format}'); font-display: swap; }`;
+};
+
+export const buildFontFaceCSS = (fonts: FontAsset[]): string => fonts.map(buildFontFaceRule).filter(Boolean).join("\n");

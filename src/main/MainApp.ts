@@ -6,11 +6,13 @@ import { SettingsWindow } from "./windows/SettingsWindow";
 import { registerUpdaterListeners } from "./ipc/handlers/updaterHandler";
 import { logger } from "./services/logger-service";
 import { downloadService } from "./services/download-service";
-import { themeService } from "./services/theme-service";
 import { WindowManager } from "./window-manager/WindowManager";
-import { SystemService } from "./services/system-service/SystemService";
+import { SystemService } from "./services/system-service";
 import { protocolService } from "./services/protocol-service";
 import { deepLinkService } from "./services/deep-link-service";
+import { updateService } from "./services/update-service";
+import { fontService } from "./services/font-service";
+import { ensureLoaded as ensureSettingsLoaded } from "./ipc/handlers/settingsHandler";
 
 export class MainApp {
   private readonly windowManager = new WindowManager();
@@ -24,7 +26,7 @@ export class MainApp {
     protocolService.registerFontProtocol();
     deepLinkService.register();
     deepLinkService.setWindowManager(this.windowManager);
-    themeService.setTheme("system");
+    await ensureSettingsLoaded();
     downloadService.monitorDownloads();
 
     const mainWindow = this.windowManager.open("main");
@@ -51,6 +53,12 @@ export class MainApp {
         logger.info("All windows closed, quitting app");
         app.quit();
       }
+    });
+
+    app.on("before-quit", () => {
+      logger.info("App quitting, cleaning up services");
+      updateService.cleanup();
+      fontService.invalidateCache();
     });
   }
 

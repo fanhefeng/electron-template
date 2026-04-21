@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type { AppSettings } from "../shared/settings";
 import type { FontAsset } from "../shared/fonts";
-import { SYSTEM_FONT_ID, SYSTEM_FONT_STACK } from "../shared/fonts";
+import { SYSTEM_FONT_ID, SYSTEM_FONT_STACK, buildFontFaceRule } from "../shared/fonts";
 import { IPC_CHANNELS } from "../shared/ipcChannels";
 
 const FONT_FACE_STYLE_ID = "app-font-face-definitions";
@@ -66,12 +66,14 @@ const getFontCatalog = async (): Promise<Map<string, FontAsset>> => {
 };
 
 const injectFontFace = (font: FontAsset): void => {
-  if (!font.source || !font.format || injectedFonts.has(font.id)) {
+  if (injectedFonts.has(font.id)) {
     return;
   }
 
+  const fontFace = buildFontFaceRule(font);
+  if (!fontFace) return;
+
   const styleElement = getStyleElement();
-  const fontFace = `@font-face { font-family: "${font.cssFamily}"; src: url('${font.source}') format('${font.format}'); font-display: swap; }`;
   styleElement.appendChild(document.createTextNode(`${fontFace}\n`));
   injectedFonts.add(font.id);
 };

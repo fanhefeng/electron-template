@@ -45,7 +45,10 @@ export const en: Record<string, string> = {
   "settings.font.preview": "Font Preview: The quick brown fox jumps over the lazy dog.",
   "settings.locale.label": "Language",
   "settings.locale.system": "System Default",
+  "settings.locale.en": "English",
+  "settings.locale.zhCN": "中文",
   "settings.button.save": "Save Settings",
+  "settings.error.saveFailed": "Failed to save settings. Changes have been reverted.",
 
   // About page
   "about.title": "About",

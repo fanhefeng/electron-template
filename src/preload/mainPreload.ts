@@ -4,7 +4,9 @@ import type { OpenWindowPayload } from "../shared/ipcChannels";
 import { IPC_CHANNELS } from "../shared/ipcChannels";
 import type { DeepLinkPayload } from "../shared/deepLink";
 import { initializeAppearanceBridge } from "./appearanceBridge";
+import { initializeLogBridge } from "./logBridge";
 
+initializeLogBridge("renderer:main");
 initializeAppearanceBridge();
 
 contextBridge.exposeInMainWorld("electronAPI", {

@@ -24,7 +24,7 @@ export class I18nService {
     } else {
       this.locale = preference;
     }
-    logger.info(`Locale updated: ${this.locale}`);
+    logger.info(`[service:i18n] setLocale: ${this.locale}`);
   }
 
   getMessages(): Record<string, string> {

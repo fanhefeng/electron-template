@@ -4,17 +4,22 @@ import { resourceService } from "../resource-service";
 
 export type ThemePreference = "system" | "light" | "dark";
 
+const VALID_THEMES: readonly ThemePreference[] = ["system", "light", "dark"];
+
+const toThemePreference = (value: string): ThemePreference =>
+  VALID_THEMES.includes(value as ThemePreference) ? (value as ThemePreference) : "system";
+
 export class ThemeService {
-  private preference: ThemePreference = nativeTheme.themeSource as ThemePreference;
+  private preference: ThemePreference = toThemePreference(nativeTheme.themeSource);
 
   setTheme(preference: ThemePreference): void {
     this.preference = preference;
     nativeTheme.themeSource = preference;
-    logger.info("Theme updated", preference);
+    logger.info(`[service:theme] setTheme: ${preference}`);
   }
 
   getTheme(): ThemePreference {
-    return nativeTheme.themeSource as ThemePreference;
+    return toThemePreference(nativeTheme.themeSource);
   }
 
   isDark(): boolean {

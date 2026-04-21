@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { ProgressInfo } from "electron-updater";
 import type { DeepLinkPayload } from "@shared/deepLink";
 import { useI18n } from "../hooks/useI18n";
+import { useLogger } from "../hooks/useLogger";
 
 const UpdateStatus = ({ t }: { t: (key: string, params?: Record<string, string>) => string }) => {
   const [status, setStatus] = useState("");
@@ -45,6 +46,7 @@ const UpdateStatus = ({ t }: { t: (key: string, params?: Record<string, string>)
 
 export const App = () => {
   const { t } = useI18n();
+  const logger = useLogger("App");
   const [deepLinkInfo, setDeepLinkInfo] = useState<string>("");
 
   useEffect(() => {
@@ -52,27 +54,42 @@ export const App = () => {
     if (!api) return;
 
     const handleDeepLink = (_event: unknown, payload: DeepLinkPayload) => {
-      setDeepLinkInfo(`path=${payload.path} params=${JSON.stringify(payload.params)}`);
+      const info = `path=${payload.path} params=${JSON.stringify(payload.params)}`;
+      logger.info("deep-link-received", info);
+      setDeepLinkInfo(info);
     };
 
     api.onDeepLink(handleDeepLink);
     return () => {
       api.offDeepLink(handleDeepLink);
     };
-  }, []);
+  }, [logger]);
 
   const handleOpenWindow = (windowName: "about" | "settings") => {
+    logger.click(`${windowName} button`);
     window.electronAPI?.openWindow(windowName);
   };
 
   return (
-    <div style={{ padding: "2rem", fontFamily: "var(--app-font-family, system-ui)" }}>
+    <div style={{ paddingBlock: "2rem", paddingInline: "2rem", fontFamily: "var(--app-font-family, system-ui)" }}>
       <h1>{t("app.title")}</h1>
       <div style={{ display: "flex", gap: "1rem", marginBlockEnd: "1.5rem" }}>
-        <button type="button" onClick={() => window.electronAPI?.checkForUpdates()}>
+        <button
+          type="button"
+          onClick={() => {
+            logger.click("Check for Updates button");
+            window.electronAPI?.checkForUpdates();
+          }}
+        >
           {t("update.button.check")}
         </button>
-        <button type="button" onClick={() => window.electronAPI?.applyUpdate()}>
+        <button
+          type="button"
+          onClick={() => {
+            logger.click("Apply Update button");
+            window.electronAPI?.applyUpdate();
+          }}
+        >
           {t("update.button.apply")}
         </button>
       </div>
