@@ -140,4 +140,32 @@ export const en: Record<string, string> = {
   "about.version.electron": "Electron Version",
   "about.version.chrome": "Chrome Version",
   "about.version.unknown": "unknown",
+
+  // Menu — macOS app menu
+  "menu.app.about": "About {appName}",
+  "menu.app.settings": "Settings…",
+  "menu.app.quit": "Quit {appName}",
+
+  // Menu — File (Windows/Linux)
+  "menu.file": "File",
+  "menu.file.settings": "Settings…",
+  "menu.file.quit": "Quit",
+
+  // Menu — Edit
+  "menu.edit": "Edit",
+  "menu.edit.undo": "Undo",
+  "menu.edit.redo": "Redo",
+  "menu.edit.cut": "Cut",
+  "menu.edit.copy": "Copy",
+  "menu.edit.paste": "Paste",
+  "menu.edit.selectAll": "Select All",
+
+  // Menu — Window (macOS)
+  "menu.window": "Window",
+  "menu.window.minimize": "Minimize",
+  "menu.window.close": "Close",
+
+  // Menu — Help
+  "menu.help": "Help",
+  "menu.help.viewLogs": "View Logs",
 };

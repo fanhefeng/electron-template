@@ -1,9 +1,23 @@
+import { shell } from "electron";
 import log from "electron-log";
 
 export class LoggerService {
   constructor() {
     log.transports.console.level = "silly";
     log.transports.file.level = "info";
+  }
+
+  getLogFilePath(): string {
+    return log.transports.file.getFile().path;
+  }
+
+  async openLogFile(): Promise<void> {
+    const filePath = this.getLogFilePath();
+    this.info(`LoggerService.openLogFile called, path=${filePath}`);
+    const result = await shell.openPath(filePath);
+    if (result) {
+      this.error(`LoggerService.openLogFile failed: ${result}`);
+    }
   }
 
   info(message: string, ...meta: unknown[]): void {

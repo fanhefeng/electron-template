@@ -131,7 +131,7 @@ export const zhCN: Record<string, string> = {
 
   // Error boundary
   "error.boundary.title": "出现错误",
-  "error.boundary.message": "发生了意外错误，请尝试���新加载窗口。",
+  "error.boundary.message": "发生了意外错误，请尝试重新加载窗口。",
 
   // About page
   "about.title": "关于",
@@ -140,4 +140,32 @@ export const zhCN: Record<string, string> = {
   "about.version.electron": "Electron 版本",
   "about.version.chrome": "Chrome 版本",
   "about.version.unknown": "未知",
+
+  // Menu — macOS app menu
+  "menu.app.about": "关于 {appName}",
+  "menu.app.settings": "设置…",
+  "menu.app.quit": "退出 {appName}",
+
+  // Menu — File (Windows/Linux)
+  "menu.file": "文件",
+  "menu.file.settings": "设置…",
+  "menu.file.quit": "退出",
+
+  // Menu — Edit
+  "menu.edit": "编辑",
+  "menu.edit.undo": "撤销",
+  "menu.edit.redo": "重做",
+  "menu.edit.cut": "剪切",
+  "menu.edit.copy": "复制",
+  "menu.edit.paste": "粘贴",
+  "menu.edit.selectAll": "全选",
+
+  // Menu — Window (macOS)
+  "menu.window": "窗口",
+  "menu.window.minimize": "最小化",
+  "menu.window.close": "关闭",
+
+  // Menu — Help
+  "menu.help": "帮助",
+  "menu.help.viewLogs": "查看日志",
 };
