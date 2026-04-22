@@ -10,6 +10,7 @@ import { logger } from "../../services/logger-service";
 import { fontService } from "../../services/font-service";
 import { i18nService } from "../../services/i18n-service";
 import { themeService } from "../../services/theme-service";
+import { systemService } from "../../services/system-service";
 
 let cachedSettings: AppSettings = { ...defaultSettings };
 let loadPromise: Promise<void> | null = null;
@@ -35,9 +36,26 @@ export const ensureLoaded = (): Promise<void> => {
     } catch {
       cachedSettings = { ...defaultSettings };
     }
-    await themeService.ensureLoaded();
-    themeService.setActiveTheme(cachedSettings.themeId);
+    try {
+      await themeService.ensureLoaded();
+      themeService.setActiveTheme(cachedSettings.themeId);
+    } catch (error) {
+      logger.error("Failed to initialize theme service, continuing with default theme", error);
+    }
     i18nService.setLocale(cachedSettings.locale);
+    try {
+      const currentAutoLaunch = systemService.getAutoLaunchEnabled();
+      if (currentAutoLaunch !== cachedSettings.autoLaunch) {
+        logger.info(
+          `Settings: autoLaunch mismatch, system=${currentAutoLaunch}, saved=${cachedSettings.autoLaunch}, syncing`
+        );
+        systemService.setAutoLaunch(cachedSettings.autoLaunch);
+      } else {
+        logger.debug(`Settings: autoLaunch already in sync (${cachedSettings.autoLaunch})`);
+      }
+    } catch (error) {
+      logger.error("Failed to sync autoLaunch to system during startup", error);
+    }
   })();
 
   return loadPromise;
@@ -61,7 +79,8 @@ export const updateSettings = async (
 ): Promise<AppSettings> => {
   await ensureLoaded();
   const settings = sanitizeSettings(rawSettings as Record<string, unknown>);
-  if (settings.fontFamily) {
+  const fontFamilyChanged = settings.fontFamily !== undefined && settings.fontFamily !== cachedSettings.fontFamily;
+  if (fontFamilyChanged) {
     await fontService.listFonts({ forceRefresh: true });
   }
   const normalizedFont = await normalizeFontPreference(settings.fontFamily);
@@ -79,10 +98,18 @@ export const updateSettings = async (
     logger.error("Failed to save settings", error);
     throw new Error("Failed to save settings", { cause: error });
   }
-  if (settings.themeId !== undefined) {
+  if (settings.autoLaunch !== undefined && settings.autoLaunch !== previousSettings.autoLaunch) {
+    try {
+      logger.info(`Settings: autoLaunch changed from ${previousSettings.autoLaunch} to ${settings.autoLaunch}`);
+      systemService.setAutoLaunch(settings.autoLaunch);
+    } catch (error) {
+      logger.error("Failed to sync autoLaunch to system", error);
+    }
+  }
+  if (settings.themeId !== undefined && settings.themeId !== previousSettings.themeId) {
     themeService.setActiveTheme(settings.themeId);
   }
-  if (settings.locale !== undefined) {
+  if (settings.locale !== undefined && settings.locale !== previousSettings.locale) {
     i18nService.setLocale(settings.locale);
   }
   BrowserWindow.getAllWindows().forEach((win) => {

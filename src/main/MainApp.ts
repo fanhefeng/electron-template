@@ -7,16 +7,18 @@ import { registerUpdaterListeners } from "./ipc/handlers/updaterHandler";
 import { logger } from "./services/logger-service";
 import { downloadService } from "./services/download-service";
 import { WindowManager } from "./window-manager/WindowManager";
-import { SystemService } from "./services/system-service";
+import type { SystemService } from "./services/system-service";
+import { systemService } from "./services/system-service";
 import { protocolService } from "./services/protocol-service";
 import { deepLinkService } from "./services/deep-link-service";
 import { updateService } from "./services/update-service";
 import { fontService } from "./services/font-service";
 import { ensureLoaded as ensureSettingsLoaded } from "./ipc/handlers/settingsHandler";
+import { buildAppMenu } from "./menu";
 
 export class MainApp {
   private readonly windowManager = new WindowManager();
-  private readonly systemService = new SystemService();
+  private readonly systemService = systemService;
 
   async init(): Promise<void> {
     this.registerWindows();
@@ -27,6 +29,7 @@ export class MainApp {
     deepLinkService.register();
     deepLinkService.setWindowManager(this.windowManager);
     await ensureSettingsLoaded();
+    buildAppMenu(this.windowManager);
     downloadService.monitorDownloads();
 
     const mainWindow = this.windowManager.open("main");
