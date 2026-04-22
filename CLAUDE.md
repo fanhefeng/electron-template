@@ -51,6 +51,8 @@ Multi-process Electron app: main process + per-window renderer processes, bridge
 - **页面 UI 与 app 功能解耦**：页面只负责布局和展示，所有功能通过引入 API（preload 暴露的接口）实现，不在 renderer 中直接操作业务逻辑。
 - **国际化优先**：页面中所有用户可见文本、标签、占位符等均不能写死，必须预留国际化（i18n）接入点。
 - **CSS 逻辑布局**：使用逻辑属性（`inline-start/end`、`block-start/end`、`margin-inline`、`padding-block` 等），禁止使用物理方向属性（`left`、`right`、`top`、`bottom`、`margin-left` 等），以支持 RTL 语言。
+- **日志详细度**：日志系统需要达到光看日志就能了解用户的每一步操作，调用了哪些方法功能函数等。每个 service 方法入口处记录调用信息（方法名、关键参数），状态变更和错误处理等关键节点也需要日志输出。
+- **功能逻辑归属 service 层**：renderer 页面只能调用 preload 暴露的方法，不自行编写业务逻辑。系统级功能（如开机自启）应放入对应的 service（如 `SystemService`）中，由 handler 调用 service，preload 暴露接口给 renderer。
 
 ## Coding Conventions
 

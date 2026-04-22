@@ -25,6 +25,7 @@ export class DeepLinkService {
   }
 
   setWindowManager(windowManager: WindowManager): void {
+    logger.info("[service:deepLink] setWindowManager called");
     this.windowManager = windowManager;
 
     // 处理所有等待中的 payload（app 冷启动时收到的 deep link）
@@ -38,7 +39,9 @@ export class DeepLinkService {
   }
 
   parse(url: string): DeepLinkPayload | null {
+    logger.debug(`[service:deepLink] parse called, url=${url}`);
     if (!url || !url.startsWith(`${this.scheme}://`)) {
+      logger.debug(`[service:deepLink] parse rejected: not a ${this.scheme}:// URL`);
       return null;
     }
 
@@ -127,7 +130,10 @@ export class DeepLinkService {
 
   private sendToRenderer(browserWindow: BrowserWindow, payload: DeepLinkPayload): void {
     if (!browserWindow.isDestroyed()) {
+      logger.info(`[service:deepLink] sendToRenderer: window=${browserWindow.id}, path=${payload.path}`);
       browserWindow.webContents.send(IPC_CHANNELS.DEEP_LINK_NAVIGATE, payload);
+    } else {
+      logger.warn("[service:deepLink] sendToRenderer: target window already destroyed");
     }
   }
 }

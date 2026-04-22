@@ -8,8 +8,12 @@ export class I18nService {
 
   private detectLocale(): SupportedLocale {
     try {
-      return resolveLocale(app.getLocale());
-    } catch {
+      const systemLocale = app.getLocale();
+      const resolved = resolveLocale(systemLocale);
+      logger.debug(`[service:i18n] detectLocale: system="${systemLocale}", resolved="${resolved}"`);
+      return resolved;
+    } catch (error) {
+      logger.warn("[service:i18n] detectLocale failed, falling back to 'en'", error);
       return "en";
     }
   }

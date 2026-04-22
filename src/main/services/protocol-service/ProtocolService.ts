@@ -31,7 +31,9 @@ export class ProtocolService {
   private fontProtocolRegistered = false;
 
   registerFontProtocol(): void {
+    logger.info("[protocol] registerFontProtocol called");
     if (this.fontProtocolRegistered) {
+      logger.debug("[protocol] Font protocol already registered, skipping");
       return;
     }
 
@@ -83,6 +85,7 @@ export class ProtocolService {
     });
 
     this.fontProtocolRegistered = true;
+    logger.info(`[protocol] Font protocol registered: ${FONT_SCHEME}://${FONT_HOST}/`);
   }
 
   resolveFontUrl(fileName: string): string {

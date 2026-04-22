@@ -8,11 +8,14 @@ export class DownloadService {
   private willDownloadHandler?: (event: Electron.Event, item: Electron.DownloadItem) => void;
 
   configure(downloadDirectory?: string): void {
+    logger.info(`[service:download] configure: downloadDirectory=${downloadDirectory ?? "(default)"}`);
     this.downloadDirectory = downloadDirectory;
   }
 
   monitorDownloads(): void {
+    logger.info("[service:download] monitorDownloads called");
     if (this.isRegistered) {
+      logger.debug("[service:download] already registered, skipping");
       return;
     }
 

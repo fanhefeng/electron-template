@@ -24,7 +24,11 @@ export class ThemeService {
           this.customThemes = raw.filter((item): item is ThemeDefinition => validateTheme(item) && !item.builtIn);
         }
       } catch (error) {
-        logger.warn("[service:theme] Failed to load themes.json", error);
+        if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+          logger.debug("[service:theme] No themes.json found, starting with empty custom themes");
+        } else {
+          logger.warn("[service:theme] Failed to load themes.json", error);
+        }
         this.customThemes = [];
       }
       logger.info(`[service:theme] loaded ${this.customThemes.length} custom theme(s)`);
@@ -34,6 +38,7 @@ export class ThemeService {
   }
 
   getActiveTheme(): ThemeDefinition {
+    logger.debug(`[service:theme] getActiveTheme: ${this.activeThemeId}`);
     return this.resolveTheme(this.activeThemeId);
   }
 
@@ -130,6 +135,7 @@ export class ThemeService {
   private broadcastTheme(theme: ThemeDefinition): void {
     BrowserWindow.getAllWindows().forEach((win) => {
       if (!win.isDestroyed()) {
+        logger.info(`[service:theme] broadcastTheme to window (id=${win.id}): ${theme.id}`);
         win.webContents.send(IPC_CHANNELS.THEME_UPDATED, theme);
       }
     });

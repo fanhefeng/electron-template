@@ -1,10 +1,13 @@
 import { app } from "electron";
 import os from "node:os";
 import path from "node:path";
+import { logger } from "../logger-service";
 
 export class ResourceService {
   getAppRoot(): string {
-    return app.getAppPath();
+    const root = app.getAppPath();
+    logger.debug("ResourceService.getAppRoot", root);
+    return root;
   }
 
   getDistPath(...segments: string[]): string {
@@ -16,7 +19,9 @@ export class ResourceService {
   }
 
   getRendererHtmlPath(relativeHtmlFile: string): string {
-    return this.getRendererPath(relativeHtmlFile);
+    const result = this.getRendererPath(relativeHtmlFile);
+    logger.debug(`ResourceService.getRendererHtmlPath: ${relativeHtmlFile} → ${result}`);
+    return result;
   }
 
   getPreloadPath(...segments: string[]): string {
@@ -24,7 +29,9 @@ export class ResourceService {
   }
 
   getPreloadScript(name: string): string {
-    return this.getPreloadPath("preload", `${name}Preload.js`);
+    const result = this.getPreloadPath("preload", `${name}Preload.js`);
+    logger.debug(`ResourceService.getPreloadScript: ${name} → ${result}`);
+    return result;
   }
 
   getSharedPreloadPath(relative: string): string {
@@ -32,11 +39,11 @@ export class ResourceService {
   }
 
   getStaticResourcePath(...segments: string[]): string {
-    if (app.isPackaged) {
-      return path.join(process.resourcesPath, ...segments);
-    }
-
-    return path.join(this.getAppRoot(), "resources", ...segments);
+    const result = app.isPackaged
+      ? path.join(process.resourcesPath, ...segments)
+      : path.join(this.getAppRoot(), "resources", ...segments);
+    logger.debug(`ResourceService.getStaticResourcePath: [${segments.join("/")}] → ${result}`);
+    return result;
   }
 
   getThemePath(themeName = "default"): string {
@@ -46,12 +53,16 @@ export class ResourceService {
   getTempDirectory(...segments: string[]): string {
     const base = app.isReady() ? app.getPath("temp") : os.tmpdir();
     const appSegment = app.getName() || "electron-app";
-    return path.join(base, appSegment, ...segments);
+    const result = path.join(base, appSegment, ...segments);
+    logger.debug(`ResourceService.getTempDirectory: [${segments.join("/")}] → ${result}`);
+    return result;
   }
 
   resolveDownloadPath(fileName: string, directory?: string): string {
     const base = directory ?? (app.isReady() ? app.getPath("downloads") : os.homedir());
-    return path.join(base, fileName);
+    const result = path.join(base, fileName);
+    logger.debug(`ResourceService.resolveDownloadPath: ${fileName} → ${result}`);
+    return result;
   }
 
   resolvePath(...segments: string[]): string {

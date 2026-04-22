@@ -41,8 +41,7 @@ export class FontService {
       const usedIds = new Set<string>(fonts.map((font) => font.id));
       await Promise.all(
         entries.map(async (entry) => {
-          if (!entry.isFile()) {
-            logger.warn(`entry -> ${entry}, entry is not a file.`);
+          if (!entry.isFile() || entry.name.startsWith(".")) {
             return;
           }
 
@@ -79,6 +78,7 @@ export class FontService {
   }
 
   invalidateCache(): void {
+    logger.info("[service:font] invalidateCache called");
     this.cachedFonts = null;
     this.cachedMap = null;
   }
