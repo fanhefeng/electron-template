@@ -1,5 +1,13 @@
 import { Component } from "react";
 import type { ErrorInfo, ReactNode } from "react";
+import { en } from "@shared/locales/en";
+import { zhCN } from "@shared/locales/zh-CN";
+
+const getErrorText = (key: string): string => {
+  const isZh = document.documentElement.lang?.startsWith("zh");
+  const dict = isZh ? zhCN : en;
+  return dict[key] ?? key;
+};
 
 interface Props {
   children: ReactNode;
@@ -37,12 +45,8 @@ export class ErrorBoundary extends Component<Props, State> {
             fontFamily: "var(--app-font-family, system-ui)",
           }}
         >
-          <h2>{document.documentElement.lang?.startsWith("zh") ? "出现错误" : "Something went wrong"}</h2>
-          <p>
-            {document.documentElement.lang?.startsWith("zh")
-              ? "发生了意外错误���请尝试重新加载窗口。"
-              : "An unexpected error occurred. Please try reloading the window."}
-          </p>
+          <h2>{getErrorText("error.boundary.title")}</h2>
+          <p>{getErrorText("error.boundary.message")}</p>
         </div>
       );
     }

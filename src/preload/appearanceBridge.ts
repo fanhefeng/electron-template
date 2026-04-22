@@ -78,8 +78,10 @@ const applyAppearance = async (settings: AppSettings): Promise<void> => {
     injectFontFace(font);
   }
 
-  if (settings.locale && settings.locale !== "system") {
-    const lang = LOCALE_TO_LANG[settings.locale];
+  if (settings.locale) {
+    const effectiveLocale =
+      settings.locale === "system" ? (navigator.language.startsWith("zh") ? "zh-CN" : "en") : settings.locale;
+    const lang = LOCALE_TO_LANG[effectiveLocale];
     if (lang) {
       document.documentElement.lang = lang;
     }

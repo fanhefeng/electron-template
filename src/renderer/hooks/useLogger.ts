@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 
 interface Logger {
   info: (action: string, details?: string) => void;
@@ -48,5 +48,8 @@ export const useLogger = (componentName: string): Logger => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { info, warn, error, debug, click, change, submit };
+  return useMemo(
+    () => ({ info, warn, error, debug, click, change, submit }),
+    [info, warn, error, debug, click, change, submit]
+  );
 };

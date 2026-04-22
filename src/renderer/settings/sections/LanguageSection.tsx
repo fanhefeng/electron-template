@@ -1,3 +1,4 @@
+import type { AppSettings } from "@shared/settings";
 import { SettingRow } from "../components/SettingRow";
 import { selectClass } from "../components/styles";
 import type { SettingsSectionProps } from "./types";
