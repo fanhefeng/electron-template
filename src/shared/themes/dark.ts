@@ -1,0 +1,35 @@
+import type { ThemeDefinition } from "../theme";
+import { THEME_SCHEMA_VERSION } from "../theme";
+
+export const darkTheme: ThemeDefinition = {
+  id: "builtin-dark",
+  name: "theme.preset.dark",
+  builtIn: true,
+  colorScheme: "dark",
+  version: THEME_SCHEMA_VERSION,
+  colors: {
+    bgPrimary: "#1f2937",
+    bgSecondary: "#111827",
+    bgTertiary: "#374151",
+    surfacePrimary: "#374151",
+    surfaceHover: "#4b5563",
+    surfaceActive: "#6b7280",
+    textPrimary: "#f9fafb",
+    textSecondary: "#d1d5db",
+    textTertiary: "#9ca3af",
+    textInverse: "#ffffff",
+    borderPrimary: "#374151",
+    borderSecondary: "#4b5563",
+    accentPrimary: "#3b82f6",
+    accentHover: "#60a5fa",
+    accentActive: "#93c5fd",
+    accentSubtle: "rgba(59, 130, 246, 0.15)",
+    statusError: "#f87171",
+    statusWarning: "#fbbf24",
+    statusSuccess: "#4ade80",
+    statusInfo: "#60a5fa",
+    focusRing: "#60a5fa",
+    scrollbarThumb: "#4b5563",
+    scrollbarTrack: "#1f2937",
+  },
+};

@@ -41,7 +41,11 @@ const UpdateStatus = ({ t }: { t: (key: string, params?: Record<string, string>)
     };
   }, [t]);
 
-  return <p>{status || t("update.status.idle")}</p>;
+  return (
+    <div className="rounded-lg bg-bg-tertiary px-4 py-3">
+      <p className="text-sm text-text-secondary">{status || t("update.status.idle")}</p>
+    </div>
+  );
 };
 
 export const App = () => {
@@ -71,41 +75,83 @@ export const App = () => {
   };
 
   return (
-    <div style={{ paddingBlock: "2rem", paddingInline: "2rem", fontFamily: "var(--app-font-family, system-ui)" }}>
-      <h1>{t("app.title")}</h1>
-      <div style={{ display: "flex", gap: "1rem", marginBlockEnd: "1.5rem" }}>
-        <button
-          type="button"
-          onClick={() => {
-            logger.click("Check for Updates button");
-            window.electronAPI?.checkForUpdates();
-          }}
-        >
-          {t("update.button.check")}
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            logger.click("Apply Update button");
-            window.electronAPI?.applyUpdate();
-          }}
-        >
-          {t("update.button.apply")}
-        </button>
-      </div>
-      <UpdateStatus t={t} />
-      {deepLinkInfo && (
-        <p>
-          {t("deepLink.label")}: {deepLinkInfo}
-        </p>
-      )}
-      <div style={{ display: "flex", gap: "1rem", marginBlockStart: "2rem" }}>
-        <button type="button" onClick={() => handleOpenWindow("about")}>
-          {t("nav.about")}
-        </button>
-        <button type="button" onClick={() => handleOpenWindow("settings")}>
-          {t("nav.settings")}
-        </button>
+    <div
+      className="min-h-screen bg-bg-primary text-text-primary"
+      style={{ fontFamily: "var(--app-font-family, system-ui)" }}
+    >
+      <div className="mx-auto max-w-2xl [padding-block:2rem] [padding-inline:2rem]">
+        {/* Header */}
+        <h1 className="text-2xl font-bold text-text-primary [margin-block-end:1.5rem]">{t("app.title")}</h1>
+
+        {/* Status card */}
+        <div className="rounded-lg border border-border-primary bg-surface-primary p-4 shadow-sm [margin-block-end:1.5rem]">
+          <div className="flex items-center gap-3 [margin-block-end:0.75rem]">
+            <button
+              type="button"
+              onClick={() => {
+                logger.click("Check for Updates button");
+                window.electronAPI?.checkForUpdates();
+              }}
+              className="rounded-lg bg-accent-primary px-4 py-1.5 text-sm font-medium text-text-inverse transition-colors hover:bg-accent-hover active:bg-accent-active"
+            >
+              {t("update.button.check")}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                logger.click("Apply Update button");
+                window.electronAPI?.applyUpdate();
+              }}
+              className="rounded-lg border border-border-secondary px-4 py-1.5 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-hover"
+            >
+              {t("update.button.apply")}
+            </button>
+          </div>
+          <UpdateStatus t={t} />
+        </div>
+
+        {/* Deep link info */}
+        {deepLinkInfo && (
+          <div className="rounded-lg border border-border-primary bg-accent-subtle px-4 py-3 [margin-block-end:1.5rem]">
+            <p className="text-sm text-text-secondary">
+              <span className="font-medium text-accent-primary">{t("deepLink.label")}:</span> {deepLinkInfo}
+            </p>
+          </div>
+        )}
+
+        {/* Status badges demo */}
+        <div className="flex flex-wrap gap-2 [margin-block-end:1.5rem]">
+          <span className="rounded-full bg-status-success/15 px-3 py-1 text-xs font-medium text-status-success">
+            {t("update.status.idle")}
+          </span>
+          <span className="rounded-full bg-status-info/15 px-3 py-1 text-xs font-medium text-status-info">
+            {t("update.status.available")}
+          </span>
+          <span className="rounded-full bg-status-warning/15 px-3 py-1 text-xs font-medium text-status-warning">
+            {t("update.status.downloading")}
+          </span>
+          <span className="rounded-full bg-status-error/15 px-3 py-1 text-xs font-medium text-status-error">
+            {t("update.status.error", { message: "demo" })}
+          </span>
+        </div>
+
+        {/* Navigation buttons */}
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={() => handleOpenWindow("about")}
+            className="rounded-lg border border-border-secondary px-4 py-1.5 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-hover"
+          >
+            {t("nav.about")}
+          </button>
+          <button
+            type="button"
+            onClick={() => handleOpenWindow("settings")}
+            className="rounded-lg bg-accent-primary px-4 py-1.5 text-sm font-medium text-text-inverse transition-colors hover:bg-accent-hover active:bg-accent-active"
+          >
+            {t("nav.settings")}
+          </button>
+        </div>
       </div>
     </div>
   );

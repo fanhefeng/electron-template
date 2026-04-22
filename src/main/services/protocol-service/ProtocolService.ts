@@ -74,7 +74,6 @@ export class ProtocolService {
         return new Response(data, {
           headers: {
             "Content-Type": mimeType,
-            "Access-Control-Allow-Origin": "*",
           },
         });
       } catch (error) {

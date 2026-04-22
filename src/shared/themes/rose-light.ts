@@ -1,0 +1,35 @@
+import type { ThemeDefinition } from "../theme";
+import { THEME_SCHEMA_VERSION } from "../theme";
+
+export const roseLightTheme: ThemeDefinition = {
+  id: "builtin-rose-light",
+  name: "theme.preset.roseLight",
+  builtIn: true,
+  colorScheme: "light",
+  version: THEME_SCHEMA_VERSION,
+  colors: {
+    bgPrimary: "#fff1f2",
+    bgSecondary: "#ffe4e6",
+    bgTertiary: "#fecdd3",
+    surfacePrimary: "#ffffff",
+    surfaceHover: "#ffe4e6",
+    surfaceActive: "#fecdd3",
+    textPrimary: "#1c1917",
+    textSecondary: "#78716c",
+    textTertiary: "#a8a29e",
+    textInverse: "#ffffff",
+    borderPrimary: "#fecdd3",
+    borderSecondary: "#fda4af",
+    accentPrimary: "#f43f5e",
+    accentHover: "#e11d48",
+    accentActive: "#be123c",
+    accentSubtle: "#fff1f2",
+    statusError: "#ef4444",
+    statusWarning: "#f59e0b",
+    statusSuccess: "#22c55e",
+    statusInfo: "#3b82f6",
+    focusRing: "#f43f5e",
+    scrollbarThumb: "#fda4af",
+    scrollbarTrack: "#ffe4e6",
+  },
+};

@@ -8,7 +8,7 @@ import { getEnvConfig } from "../../environment";
 
 export class DeepLinkService {
   private windowManager?: WindowManager;
-  private pendingPayload: DeepLinkPayload | null = null;
+  private pendingPayloads: DeepLinkPayload[] = [];
 
   private get scheme(): string {
     return getEnvConfig().deepLinkScheme;
@@ -27,10 +27,13 @@ export class DeepLinkService {
   setWindowManager(windowManager: WindowManager): void {
     this.windowManager = windowManager;
 
-    // 如果有等待处理的 payload（app 冷启动时收到 deep link）
-    if (this.pendingPayload) {
-      this.handle(this.pendingPayload);
-      this.pendingPayload = null;
+    // 处理所有等待中的 payload（app 冷启动时收到的 deep link）
+    if (this.pendingPayloads.length > 0) {
+      const payloads = [...this.pendingPayloads];
+      this.pendingPayloads = [];
+      for (const payload of payloads) {
+        this.handle(payload);
+      }
     }
   }
 
@@ -72,8 +75,8 @@ export class DeepLinkService {
     logger.info("Handling deep link:", payload.raw);
 
     if (!this.windowManager) {
-      // WindowManager 未就绪，缓存等待
-      this.pendingPayload = payload;
+      // WindowManager 未就绪，加入等待队列
+      this.pendingPayloads.push(payload);
       return;
     }
 
@@ -90,14 +93,20 @@ export class DeepLinkService {
     };
 
     if (browserWindow.webContents.isLoading()) {
-      browserWindow.webContents.once("did-finish-load", sendOnce);
       // 超时保护：若 10 秒内未加载完成，仍尝试发送
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         if (!browserWindow.isDestroyed()) {
-          browserWindow.webContents.removeListener("did-finish-load", sendOnce);
+          browserWindow.webContents.removeListener("did-finish-load", onLoad);
         }
         sendOnce();
       }, 10_000);
+
+      const onLoad = () => {
+        clearTimeout(timeoutId);
+        sendOnce();
+      };
+
+      browserWindow.webContents.once("did-finish-load", onLoad);
     } else {
       sendOnce();
     }

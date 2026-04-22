@@ -1,0 +1,35 @@
+import type { ThemeDefinition } from "../theme";
+import { THEME_SCHEMA_VERSION } from "../theme";
+
+export const lightTheme: ThemeDefinition = {
+  id: "builtin-light",
+  name: "theme.preset.light",
+  builtIn: true,
+  colorScheme: "light",
+  version: THEME_SCHEMA_VERSION,
+  colors: {
+    bgPrimary: "#ffffff",
+    bgSecondary: "#f9fafb",
+    bgTertiary: "#f3f4f6",
+    surfacePrimary: "#ffffff",
+    surfaceHover: "#f3f4f6",
+    surfaceActive: "#e5e7eb",
+    textPrimary: "#111827",
+    textSecondary: "#6b7280",
+    textTertiary: "#9ca3af",
+    textInverse: "#ffffff",
+    borderPrimary: "#e5e7eb",
+    borderSecondary: "#d1d5db",
+    accentPrimary: "#3b82f6",
+    accentHover: "#2563eb",
+    accentActive: "#1d4ed8",
+    accentSubtle: "#eff6ff",
+    statusError: "#ef4444",
+    statusWarning: "#f59e0b",
+    statusSuccess: "#22c55e",
+    statusInfo: "#3b82f6",
+    focusRing: "#3b82f6",
+    scrollbarThumb: "#d1d5db",
+    scrollbarTrack: "#f3f4f6",
+  },
+};

@@ -1,13 +1,14 @@
 import { resolve } from "path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 
 const root = import.meta.dirname;
 
 export default defineConfig({
   base: "./",
   root: resolve(root, "src/renderer"),
-  plugins: [react()],
+  plugins: [tailwindcss(), react()],
   build: {
     outDir: resolve(root, "dist/renderer"),
     emptyOutDir: true,

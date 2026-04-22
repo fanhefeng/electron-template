@@ -1,10 +1,11 @@
 import { SYSTEM_FONT_ID } from "./fonts";
 import type { LocalePreference } from "./locales";
+import type { ThemeId } from "./theme";
 
 export type FontPreference = typeof SYSTEM_FONT_ID | string;
 
 export interface AppSettings {
-  theme: "light" | "dark";
+  themeId: ThemeId;
   autoLaunch: boolean;
   enableNotifications: boolean;
   fontFamily: FontPreference;
@@ -12,23 +13,33 @@ export interface AppSettings {
 }
 
 export const defaultSettings: AppSettings = {
-  theme: "light",
+  themeId: "builtin-light",
   autoLaunch: false,
   enableNotifications: true,
   fontFamily: SYSTEM_FONT_ID,
   locale: "system",
 };
 
-const VALID_THEMES: readonly AppSettings["theme"][] = ["light", "dark"];
 const VALID_LOCALES: readonly AppSettings["locale"][] = ["system", "en", "zh-CN"];
+
+const THEME_MIGRATION_MAP: Record<string, ThemeId> = {
+  light: "builtin-light",
+  dark: "builtin-dark",
+};
 
 /** Strip unknown keys and validate known values from an untrusted Partial<AppSettings>. */
 export const sanitizeSettings = (raw: Record<string, unknown>): Partial<AppSettings> => {
   const result: Partial<AppSettings> = {};
 
-  if ("theme" in raw && VALID_THEMES.includes(raw.theme as AppSettings["theme"])) {
-    result.theme = raw.theme as AppSettings["theme"];
+  if ("themeId" in raw && typeof raw.themeId === "string" && raw.themeId.length > 0) {
+    result.themeId = raw.themeId;
+  } else if ("theme" in raw && typeof raw.theme === "string") {
+    const mapped = THEME_MIGRATION_MAP[raw.theme];
+    if (mapped) {
+      result.themeId = mapped;
+    }
   }
+
   if ("autoLaunch" in raw && typeof raw.autoLaunch === "boolean") {
     result.autoLaunch = raw.autoLaunch;
   }

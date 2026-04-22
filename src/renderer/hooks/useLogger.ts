@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect } from "react";
 
 interface Logger {
   info: (action: string, details?: string) => void;
@@ -39,6 +39,7 @@ export const useLogger = (componentName: string): Logger => {
     window.log?.info("submit", formName);
   }, []);
 
+  // componentName intentionally excluded from deps — we only log the initial mount/unmount
   useEffect(() => {
     window.log?.info("mount", `${componentName} component`);
     return () => {
@@ -47,8 +48,5 @@ export const useLogger = (componentName: string): Logger => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return useMemo(
-    () => ({ info, warn, error, debug, click, change, submit }),
-    [info, warn, error, debug, click, change, submit]
-  );
+  return { info, warn, error, debug, click, change, submit };
 };

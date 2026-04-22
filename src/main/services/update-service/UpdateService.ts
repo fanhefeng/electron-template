@@ -36,9 +36,19 @@ export class UpdateService {
     Object.defineProperty(autoUpdater, "allowDowngrade", { value: isDev, writable: true });
   }
 
+  private setWindow(browserWindow: BrowserWindow): void {
+    if (this.window === browserWindow) return;
+    this.window = browserWindow;
+    browserWindow.once("closed", () => {
+      if (this.window === browserWindow) {
+        this.window = undefined;
+      }
+    });
+  }
+
   checkForUpdates(browserWindow?: BrowserWindow): void {
     if (browserWindow) {
-      this.window = browserWindow;
+      this.setWindow(browserWindow);
     }
 
     if (this.isDownloading) {
@@ -53,7 +63,7 @@ export class UpdateService {
       logger.error("Failed to check for updates", error);
       this.window?.webContents.send("update-error", toErrorMessage(error));
       if (this.window && this.window === browserWindow) {
-        dialog.showErrorBox("Update error", toErrorMessage(error));
+        dialog.showErrorBox(i18nService.t("notification.update.error.title"), toErrorMessage(error));
       }
     });
     logger.info("Update check initiated");
@@ -77,7 +87,7 @@ export class UpdateService {
 
   registerListeners(browserWindow?: BrowserWindow, systemService?: SystemService): void {
     if (browserWindow) {
-      this.window = browserWindow;
+      this.setWindow(browserWindow);
     }
 
     if (systemService) {

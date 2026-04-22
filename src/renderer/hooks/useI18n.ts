@@ -12,10 +12,11 @@ export const useI18n = () => {
     };
 
     loadMessages();
-    bridge.onSettingsUpdated(loadMessages);
+    const handleSettingsUpdated = () => loadMessages();
+    bridge.onSettingsUpdated(handleSettingsUpdated);
 
     return () => {
-      bridge.offSettingsUpdated(loadMessages);
+      bridge.offSettingsUpdated(handleSettingsUpdated);
     };
   }, []);
 

@@ -1,0 +1,35 @@
+import type { ThemeDefinition } from "../theme";
+import { THEME_SCHEMA_VERSION } from "../theme";
+
+export const blueDarkTheme: ThemeDefinition = {
+  id: "builtin-blue-dark",
+  name: "theme.preset.blueDark",
+  builtIn: true,
+  colorScheme: "dark",
+  version: THEME_SCHEMA_VERSION,
+  colors: {
+    bgPrimary: "#0f172a",
+    bgSecondary: "#020617",
+    bgTertiary: "#1e293b",
+    surfacePrimary: "#1e293b",
+    surfaceHover: "#334155",
+    surfaceActive: "#475569",
+    textPrimary: "#f1f5f9",
+    textSecondary: "#cbd5e1",
+    textTertiary: "#94a3b8",
+    textInverse: "#ffffff",
+    borderPrimary: "#1e293b",
+    borderSecondary: "#334155",
+    accentPrimary: "#38bdf8",
+    accentHover: "#7dd3fc",
+    accentActive: "#bae6fd",
+    accentSubtle: "rgba(56, 189, 248, 0.15)",
+    statusError: "#fb7185",
+    statusWarning: "#fbbf24",
+    statusSuccess: "#4ade80",
+    statusInfo: "#38bdf8",
+    focusRing: "#38bdf8",
+    scrollbarThumb: "#334155",
+    scrollbarTrack: "#0f172a",
+  },
+};

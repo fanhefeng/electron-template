@@ -1,23 +1,34 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type { AppSettings } from "../shared/settings";
 import type { FontAsset } from "../shared/fonts";
+import type { ThemeDefinition } from "../shared/theme";
+import { buildThemeCSSVars } from "../shared/theme";
 import { SYSTEM_FONT_ID, SYSTEM_FONT_STACK, buildFontFaceRule } from "../shared/fonts";
 import { IPC_CHANNELS } from "../shared/ipcChannels";
 
 const FONT_FACE_STYLE_ID = "app-font-face-definitions";
+const THEME_STYLE_ID = "app-theme-variables";
 const FONT_VARIABLE = "--app-font-family";
+
+const LOCALE_TO_LANG: Record<string, string> = {
+  en: "en",
+  "zh-CN": "zh-CN",
+};
 
 let fontCatalogPromise: Promise<Map<string, FontAsset>> | null = null;
 const injectedFonts = new Set<string>();
 
 export const initializeAppearanceBridge = (): void => {
-  // 暴露 window.app — 所有窗口共享的通用 API
   contextBridge.exposeInMainWorld("app", {
     getMessages: () => ipcRenderer.invoke(IPC_CHANNELS.GET_MESSAGES) as Promise<Record<string, string>>,
     onSettingsUpdated: (callback: (_event: Electron.IpcRendererEvent, settings: AppSettings) => void) =>
       ipcRenderer.on(IPC_CHANNELS.SETTINGS_UPDATED, callback),
     offSettingsUpdated: (callback: (_event: Electron.IpcRendererEvent, settings: AppSettings) => void) =>
       ipcRenderer.removeListener(IPC_CHANNELS.SETTINGS_UPDATED, callback),
+    onThemeUpdated: (callback: (_event: Electron.IpcRendererEvent, theme: ThemeDefinition) => void) =>
+      ipcRenderer.on(IPC_CHANNELS.THEME_UPDATED, callback),
+    offThemeUpdated: (callback: (_event: Electron.IpcRendererEvent, theme: ThemeDefinition) => void) =>
+      ipcRenderer.removeListener(IPC_CHANNELS.THEME_UPDATED, callback),
   });
 
   ipcRenderer.on(IPC_CHANNELS.SETTINGS_UPDATED, (_event, settings: AppSettings) => {
@@ -27,9 +38,32 @@ export const initializeAppearanceBridge = (): void => {
     );
   });
 
+  ipcRenderer.on(IPC_CHANNELS.THEME_UPDATED, (_event, theme: ThemeDefinition) => {
+    void applyTheme(theme).catch((error) => console.error("[appearanceBridge] Failed to apply theme", error));
+  });
+
   void (ipcRenderer.invoke(IPC_CHANNELS.GET_SETTINGS) as Promise<AppSettings>)
     .then((settings) => applyAppearance(settings))
     .catch((error) => console.error("[appearanceBridge] Failed to apply initial settings", error));
+
+  void (ipcRenderer.invoke(IPC_CHANNELS.GET_ACTIVE_THEME) as Promise<ThemeDefinition>)
+    .then((theme) => applyTheme(theme))
+    .catch((error) => console.error("[appearanceBridge] Failed to apply initial theme", error));
+};
+
+const applyTheme = async (theme: ThemeDefinition): Promise<void> => {
+  await ensureDocumentReady();
+
+  const cssText = buildThemeCSSVars(theme);
+  let styleEl = document.getElementById(THEME_STYLE_ID) as HTMLStyleElement | null;
+  if (!styleEl) {
+    styleEl = document.createElement("style");
+    styleEl.id = THEME_STYLE_ID;
+    document.head.appendChild(styleEl);
+  }
+  styleEl.textContent = `:root {\n${cssText}\n}`;
+
+  document.documentElement.style.colorScheme = theme.colorScheme;
 };
 
 const applyAppearance = async (settings: AppSettings): Promise<void> => {
@@ -42,6 +76,13 @@ const applyAppearance = async (settings: AppSettings): Promise<void> => {
 
   if (font.source && font.format) {
     injectFontFace(font);
+  }
+
+  if (settings.locale && settings.locale !== "system") {
+    const lang = LOCALE_TO_LANG[settings.locale];
+    if (lang) {
+      document.documentElement.lang = lang;
+    }
   }
 
   const fontStack = font.id === SYSTEM_FONT_ID ? SYSTEM_FONT_STACK : `"${font.cssFamily}", ${SYSTEM_FONT_STACK}`;

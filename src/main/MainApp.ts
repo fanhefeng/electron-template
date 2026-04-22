@@ -58,6 +58,7 @@ export class MainApp {
     app.on("before-quit", () => {
       logger.info("App quitting, cleaning up services");
       updateService.cleanup();
+      downloadService.cleanup();
       fontService.invalidateCache();
     });
   }

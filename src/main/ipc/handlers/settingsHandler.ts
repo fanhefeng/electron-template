@@ -26,7 +26,8 @@ export const ensureLoaded = (): Promise<void> => {
     try {
       const file = getSettingsPath();
       const content = await fs.readFile(file, "utf-8");
-      const parsed = JSON.parse(content) as Partial<AppSettings>;
+      const raw = JSON.parse(content) as Record<string, unknown>;
+      const parsed = sanitizeSettings(raw);
       cachedSettings = {
         ...defaultSettings,
         ...parsed,
@@ -34,7 +35,8 @@ export const ensureLoaded = (): Promise<void> => {
     } catch {
       cachedSettings = { ...defaultSettings };
     }
-    themeService.setTheme(cachedSettings.theme);
+    await themeService.ensureLoaded();
+    themeService.setActiveTheme(cachedSettings.themeId);
     i18nService.setLocale(cachedSettings.locale);
   })();
 
@@ -77,8 +79,8 @@ export const updateSettings = async (
     logger.error("Failed to save settings", error);
     throw new Error("Failed to save settings", { cause: error });
   }
-  if (settings.theme !== undefined) {
-    themeService.setTheme(settings.theme);
+  if (settings.themeId !== undefined) {
+    themeService.setActiveTheme(settings.themeId);
   }
   if (settings.locale !== undefined) {
     i18nService.setLocale(settings.locale);

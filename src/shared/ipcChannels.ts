@@ -10,6 +10,15 @@ export const IPC_CHANNELS = {
   GET_MESSAGES: "i18n/messages",
   SETTINGS_UPDATED: "settings:updated",
   LOG_FROM_RENDERER: "log/from-renderer",
+  LIST_THEMES: "theme/list",
+  GET_THEME: "theme/get",
+  CREATE_THEME: "theme/create",
+  UPDATE_THEME: "theme/update",
+  DELETE_THEME: "theme/delete",
+  IMPORT_THEME: "theme/import",
+  EXPORT_THEME: "theme/export",
+  GET_ACTIVE_THEME: "theme/active",
+  THEME_UPDATED: "theme:updated",
 } as const;
 
 export type IpcChannel = (typeof IPC_CHANNELS)[keyof typeof IPC_CHANNELS];

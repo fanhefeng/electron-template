@@ -1,61 +1,64 @@
 import type { FormEvent } from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { AppSettings } from "@shared/settings";
+import { defaultSettings } from "@shared/settings";
 import type { FontAsset } from "@shared/fonts";
-import { SYSTEM_FONT_ID, SYSTEM_FONT_STACK, buildFontFaceCSS } from "@shared/fonts";
+import { buildFontFaceCSS } from "@shared/fonts";
 import { useI18n } from "../hooks/useI18n";
 import { useLogger } from "../hooks/useLogger";
+import { GeneralSection } from "./sections/GeneralSection";
+import { AppearanceSection } from "./sections/AppearanceSection";
+import { LanguageSection } from "./sections/LanguageSection";
 
-const initialSettings: AppSettings = {
-  theme: "light",
-  autoLaunch: false,
-  enableNotifications: true,
-  fontFamily: SYSTEM_FONT_ID,
-  locale: "system",
-};
+type SectionId = "general" | "appearance" | "language";
+
+const NAV_ITEMS: { id: SectionId; labelKey: string }[] = [
+  { id: "general", labelKey: "settings.nav.general" },
+  { id: "appearance", labelKey: "settings.nav.appearance" },
+  { id: "language", labelKey: "settings.nav.language" },
+];
 
 export const SettingsApp = () => {
-  const [settings, setSettings] = useState<AppSettings>(initialSettings);
+  const [settings, setSettings] = useState<AppSettings>(defaultSettings);
   const [fonts, setFonts] = useState<FontAsset[]>([]);
+  const [activeSection, setActiveSection] = useState<SectionId>("general");
+  const [saveError, setSaveError] = useState("");
   const dataLoadedRef = useRef(false);
   const { t } = useI18n();
   const logger = useLogger("SettingsApp");
 
   useEffect(() => {
     const api = window.settingsAPI;
-
-    if (!api || dataLoadedRef.current) {
-      return;
-    }
-
+    if (!api || dataLoadedRef.current) return;
     dataLoadedRef.current = true;
-
     api.getSettings().then(setSettings).catch(console.error);
     api.getAvailableFonts().then(setFonts).catch(console.error);
   }, []);
 
   useEffect(() => {
-    if (!fonts.length) {
-      return;
-    }
-
+    if (!fonts.length) return;
     const styleElementId = "settings-font-previews";
     let styleElement = document.getElementById(styleElementId) as HTMLStyleElement | null;
-
     if (!styleElement) {
       styleElement = document.createElement("style");
       styleElement.id = styleElementId;
       document.head.appendChild(styleElement);
     }
-
     styleElement.textContent = buildFontFaceCSS(fonts);
-
     return () => {
       styleElement?.remove();
     };
   }, [fonts]);
 
-  const [saveError, setSaveError] = useState<string>("");
+  const handleUpdate = useCallback(
+    (patch: Partial<AppSettings>) => {
+      const key = Object.keys(patch)[0];
+      const val = Object.values(patch)[0];
+      logger.change(String(key), String(val));
+      setSettings((prev) => ({ ...prev, ...patch }));
+    },
+    [logger]
+  );
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -72,113 +75,64 @@ export const SettingsApp = () => {
       });
   };
 
-  const currentFont = useMemo(
-    () => fonts.find((font) => font.id === settings.fontFamily),
-    [fonts, settings.fontFamily]
-  );
-
-  const previewFontFamily = useMemo(() => {
-    if (!currentFont || currentFont.id === SYSTEM_FONT_ID) {
-      return `var(--app-font-family, ${SYSTEM_FONT_STACK})`;
-    }
-
-    return `"${currentFont.cssFamily}", ${SYSTEM_FONT_STACK}`;
-  }, [currentFont]);
-
   return (
     <form
       onSubmit={handleSubmit}
-      style={{ paddingBlock: "2rem", paddingInline: "2rem", fontFamily: "var(--app-font-family, system-ui)" }}
+      className="flex h-screen overflow-hidden bg-bg-primary text-text-primary"
+      style={{ fontFamily: "var(--app-font-family, system-ui)" }}
     >
-      <h2>{t("settings.title")}</h2>
-
-      <label style={{ display: "block", marginBlockEnd: "1rem" }}>
-        {t("settings.theme.label")} &nbsp;
-        <select
-          value={settings.theme}
-          onChange={(event) => {
-            logger.change("theme select", event.target.value);
-            setSettings((prev) => ({ ...prev, theme: event.target.value as "light" | "dark" }));
-          }}
-        >
-          <option value="light">{t("settings.theme.light")}</option>
-          <option value="dark">{t("settings.theme.dark")}</option>
-        </select>
-      </label>
-
-      <label style={{ display: "block", marginBlockEnd: "1rem" }}>
-        <input
-          type="checkbox"
-          checked={settings.autoLaunch}
-          onChange={(event) => {
-            logger.change("autoLaunch checkbox", String(event.target.checked));
-            setSettings((prev) => ({ ...prev, autoLaunch: event.target.checked }));
-          }}
-        />
-        {t("settings.autoLaunch")}
-      </label>
-
-      <label style={{ display: "block", marginBlockEnd: "1rem" }}>
-        <input
-          type="checkbox"
-          checked={settings.enableNotifications}
-          onChange={(event) => {
-            logger.change("notifications checkbox", String(event.target.checked));
-            setSettings((prev) => ({ ...prev, enableNotifications: event.target.checked }));
-          }}
-        />
-        {t("settings.notifications")}
-      </label>
-
-      <label style={{ display: "block", marginBlockEnd: "1rem" }}>
-        {t("settings.locale.label")}
-        <select
-          value={settings.locale}
-          onChange={(event) => {
-            logger.change("locale select", event.target.value);
-            setSettings((prev) => ({ ...prev, locale: event.target.value as AppSettings["locale"] }));
-          }}
-          style={{ display: "block", marginBlockStart: "0.5rem" }}
-        >
-          <option value="system">{t("settings.locale.system")}</option>
-          <option value="en">{t("settings.locale.en")}</option>
-          <option value="zh-CN">{t("settings.locale.zhCN")}</option>
-        </select>
-      </label>
-
-      <label style={{ display: "block", marginBlockEnd: "1rem" }}>
-        {t("settings.font.label")}
-        <select
-          value={settings.fontFamily}
-          onChange={(event) => {
-            logger.change("font select", event.target.value);
-            setSettings((prev) => ({ ...prev, fontFamily: event.target.value }));
-          }}
-          style={{ display: "block", marginBlockStart: "0.5rem" }}
-        >
-          {fonts.map((font) => (
-            <option key={font.id} value={font.id}>
-              {font.label}
-            </option>
+      {/* Sidebar */}
+      <nav className="flex w-44 shrink-0 flex-col border-e border-border-primary bg-bg-secondary px-3 py-5">
+        <h2 className="mb-4 ps-2 text-xs font-semibold tracking-wide text-text-tertiary uppercase">
+          {t("settings.title")}
+        </h2>
+        <ul className="flex flex-col gap-0.5">
+          {NAV_ITEMS.map((item) => (
+            <li key={item.id}>
+              <button
+                type="button"
+                onClick={() => {
+                  logger.click(`nav: ${item.id}`);
+                  setActiveSection(item.id);
+                }}
+                className={`w-full rounded-lg px-3 py-1.5 text-start text-sm font-medium transition-colors ${
+                  activeSection === item.id
+                    ? "bg-accent-primary text-text-inverse shadow-sm"
+                    : "text-text-secondary hover:bg-surface-hover"
+                }`}
+              >
+                {t(item.labelKey)}
+              </button>
+            </li>
           ))}
-        </select>
-      </label>
+        </ul>
+      </nav>
 
-      <div
-        style={{
-          border: "1px solid #ccc",
-          borderRadius: "4px",
-          paddingBlock: "0.75rem",
-          paddingInline: "0.75rem",
-          marginBlockEnd: "1rem",
-          fontFamily: previewFontFamily,
-        }}
-      >
-        {t("settings.font.preview")}
+      {/* Content */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex-1 overflow-y-auto px-6 py-5">
+          <h3 className="mb-4 text-base font-semibold text-text-primary">
+            {t(NAV_ITEMS.find((n) => n.id === activeSection)?.labelKey ?? "")}
+          </h3>
+
+          {activeSection === "general" && <GeneralSection settings={settings} onUpdate={handleUpdate} t={t} />}
+          {activeSection === "appearance" && (
+            <AppearanceSection settings={settings} fonts={fonts} onUpdate={handleUpdate} t={t} />
+          )}
+          {activeSection === "language" && <LanguageSection settings={settings} onUpdate={handleUpdate} t={t} />}
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center gap-3 border-t border-border-primary px-6 py-3">
+          <button
+            type="submit"
+            className="rounded-lg bg-accent-primary px-4 py-1.5 text-sm font-medium text-text-inverse shadow-sm transition-colors hover:bg-accent-hover active:bg-accent-active"
+          >
+            {t("settings.button.save")}
+          </button>
+          {saveError && <span className="text-sm text-status-error">{saveError}</span>}
+        </div>
       </div>
-
-      {saveError && <p style={{ color: "red", marginBlockEnd: "1rem" }}>{saveError}</p>}
-      <button type="submit">{t("settings.button.save")}</button>
     </form>
   );
 };
