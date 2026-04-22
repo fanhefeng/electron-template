@@ -24,6 +24,7 @@ declare global {
       checkForUpdates: () => Promise<void>;
       applyUpdate: () => Promise<void>;
       openWindow: (windowName: OpenWindowPayload) => Promise<void>;
+      showNotification: (title: string, body: string) => Promise<void>;
       onUpdateAvailable: (listener: () => void) => void;
       onUpdateNotAvailable: (listener: () => void) => void;
       onUpdateError: (listener: (_event: unknown, message: string) => void) => void;

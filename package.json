@@ -74,6 +74,10 @@
       {
         "from": "resources/fonts",
         "to": "fonts"
+      },
+      {
+        "from": "resources/icons",
+        "to": "icons"
       }
     ],
     "files": [

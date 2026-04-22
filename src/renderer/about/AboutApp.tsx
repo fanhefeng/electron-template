@@ -8,11 +8,14 @@ export const AboutApp = () => {
   const electronVersion = window.aboutAPI?.getElectronVersion() ?? "";
   const chromeVersion = window.aboutAPI?.getChromeVersion() ?? "";
   const { t } = useI18n();
-  useLogger("AboutApp");
+  const logger = useLogger("AboutApp");
 
   useEffect(() => {
-    window.aboutAPI?.getAppVersion().then(setAppVersion).catch(console.error);
-  }, []);
+    window.aboutAPI
+      ?.getAppVersion()
+      .then(setAppVersion)
+      .catch((error) => logger.error("load-app-version", String(error)));
+  }, [logger]);
 
   const unknown = t("about.version.unknown");
 

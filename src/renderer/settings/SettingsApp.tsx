@@ -31,9 +31,15 @@ export const SettingsApp = () => {
     const api = window.settingsAPI;
     if (!api || dataLoadedRef.current) return;
     dataLoadedRef.current = true;
-    api.getSettings().then(setSettings).catch(console.error);
-    api.getAvailableFonts().then(setFonts).catch(console.error);
-  }, []);
+    api
+      .getSettings()
+      .then(setSettings)
+      .catch((error) => logger.error("load-settings", String(error)));
+    api
+      .getAvailableFonts()
+      .then(setFonts)
+      .catch((error) => logger.error("load-fonts", String(error)));
+  }, [logger]);
 
   useEffect(() => {
     if (!fonts.length) return;

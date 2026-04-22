@@ -4,6 +4,7 @@ import { getSettings, updateSettings } from "./settingsHandler";
 import { listFonts } from "./fontHandler";
 import { getAppVersion } from "./appHandler";
 import { getI18nMessages } from "./i18nHandler";
+import { showNotification, isNotificationPayload } from "./notificationHandler";
 import { registerLogHandler } from "./logHandler";
 import {
   listThemes,
@@ -28,6 +29,7 @@ export const registerIpcHandlers = (windowManager: WindowManager): void => {
   handleTypedWithLogging("fonts/list", listFonts);
   handleTypedWithLogging("app/version", getAppVersion);
   handleTypedWithLogging("i18n/messages", getI18nMessages);
+  handleTypedWithLogging("notification/show", showNotification, isNotificationPayload);
   handleTypedWithLogging("window/open", (_event, payload: OpenWindowPayload) => {
     const validWindows: OpenWindowPayload[] = ["about", "settings"];
     if (!validWindows.includes(payload)) {

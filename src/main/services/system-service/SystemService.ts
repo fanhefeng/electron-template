@@ -1,4 +1,4 @@
-import { app, Notification, clipboard } from "electron";
+import { app, Notification, clipboard, nativeImage } from "electron";
 import { promises as fs } from "node:fs";
 import type { NativeImage, BrowserWindow } from "electron";
 import { logger } from "../logger-service";
@@ -9,7 +9,18 @@ interface SaveScreenshotOptions {
   filename?: string;
 }
 
+interface ShowNotificationOptions {
+  onClick?: () => void;
+}
+
 export class SystemService {
+  private notificationsEnabled = true;
+
+  setNotificationsEnabled(enabled: boolean): void {
+    logger.info(`SystemService.setNotificationsEnabled called, enabled=${enabled}`);
+    this.notificationsEnabled = enabled;
+  }
+
   setAutoLaunch(enabled: boolean): void {
     logger.info(`SystemService.setAutoLaunch called, enabled=${enabled}`);
     try {
@@ -28,17 +39,38 @@ export class SystemService {
     return settings.openAtLogin;
   }
 
-  showNotification(title: string, body: string): void {
-    logger.info(`SystemService.showNotification called, title="${title}"`);
+  showNotification(title: string, body: string, options?: ShowNotificationOptions): void {
+    logger.info(`SystemService.showNotification called, title="${title}", body="${body}"`);
+
+    if (!this.notificationsEnabled) {
+      logger.info("SystemService.showNotification: notifications disabled by user setting, skipping");
+      return;
+    }
+
     if (!Notification.isSupported()) {
       logger.warn("SystemService.showNotification: notifications not supported on this platform");
       return;
     }
 
+    const iconPath = resourceService.getStaticResourcePath("icons", "icon.icns");
+    const icon = nativeImage.createFromPath(iconPath);
+
     const notification = new Notification({
       title,
       body,
+      icon: icon.isEmpty() ? undefined : icon,
     });
+
+    if (options?.onClick) {
+      const onClick = options.onClick;
+      notification.on("click", () => {
+        try {
+          onClick();
+        } catch (error) {
+          logger.error("SystemService.showNotification: error in click handler", error);
+        }
+      });
+    }
 
     notification.show();
     logger.info("SystemService.showNotification: notification shown");

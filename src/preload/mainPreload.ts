@@ -13,6 +13,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   checkForUpdates: () => ipcRenderer.invoke(IPC_CHANNELS.CHECK_FOR_UPDATES),
   applyUpdate: () => ipcRenderer.invoke(IPC_CHANNELS.APPLY_UPDATE),
   openWindow: (windowName: OpenWindowPayload) => ipcRenderer.invoke(IPC_CHANNELS.OPEN_WINDOW, windowName),
+  showNotification: (title: string, body: string) =>
+    ipcRenderer.invoke(IPC_CHANNELS.SHOW_NOTIFICATION, { title, body }),
   onUpdateAvailable: (callback: () => void) => ipcRenderer.on(IPC_CHANNELS.UPDATE_AVAILABLE, callback),
   offUpdateAvailable: (callback: () => void) => ipcRenderer.removeListener(IPC_CHANNELS.UPDATE_AVAILABLE, callback),
   onUpdateNotAvailable: (callback: () => void) => ipcRenderer.on(IPC_CHANNELS.UPDATE_NOT_AVAILABLE, callback),

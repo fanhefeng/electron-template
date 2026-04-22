@@ -1,6 +1,7 @@
 import type { AppSettings } from "../../shared/settings";
 import type { FontAsset } from "../../shared/fonts";
 import type { OpenWindowPayload } from "../../shared/ipcChannels";
+import type { NotificationPayload } from "../../shared/notification";
 import type { ThemeDefinition, ThemeId, ExportedTheme } from "../../shared/theme";
 
 export type IpcContract = {
@@ -12,6 +13,7 @@ export type IpcContract = {
   "app/version": { req: void; res: string };
   "window/open": { req: OpenWindowPayload; res: void };
   "i18n/messages": { req: void; res: Record<string, string> };
+  "notification/show": { req: NotificationPayload; res: void };
   "theme/list": { req: void; res: ThemeDefinition[] };
   "theme/get": { req: ThemeId; res: ThemeDefinition | null };
   "theme/create": { req: Omit<ThemeDefinition, "id" | "builtIn">; res: ThemeDefinition };

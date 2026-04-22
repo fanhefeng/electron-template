@@ -43,6 +43,7 @@ export const ensureLoaded = (): Promise<void> => {
       logger.error("Failed to initialize theme service, continuing with default theme", error);
     }
     i18nService.setLocale(cachedSettings.locale);
+    systemService.setNotificationsEnabled(cachedSettings.enableNotifications);
     try {
       const currentAutoLaunch = systemService.getAutoLaunchEnabled();
       if (currentAutoLaunch !== cachedSettings.autoLaunch) {
@@ -97,6 +98,15 @@ export const updateSettings = async (
     cachedSettings = previousSettings;
     logger.error("Failed to save settings", error);
     throw new Error("Failed to save settings", { cause: error });
+  }
+  if (
+    settings.enableNotifications !== undefined &&
+    settings.enableNotifications !== previousSettings.enableNotifications
+  ) {
+    logger.info(
+      `Settings: enableNotifications changed from ${previousSettings.enableNotifications} to ${settings.enableNotifications}`
+    );
+    systemService.setNotificationsEnabled(settings.enableNotifications);
   }
   if (settings.autoLaunch !== undefined && settings.autoLaunch !== previousSettings.autoLaunch) {
     try {
