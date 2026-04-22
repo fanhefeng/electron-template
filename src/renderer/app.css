@@ -1,5 +1,36 @@
 @import "tailwindcss";
 
+/* ── Block-direction logical property utilities ── */
+/* Tailwind v4 only ships inline-direction logical utilities (ms-*, me-*, ps-*, pe-, border-s, border-e). */
+/* These custom utilities fill the gap for block-direction to support writing-mode independence.         */
+
+@utility mbs-* {
+  margin-block-start: --value(--spacing);
+}
+@utility mbe-* {
+  margin-block-end: --value(--spacing);
+}
+@utility pbs-* {
+  padding-block-start: --value(--spacing);
+}
+@utility pbe-* {
+  padding-block-end: --value(--spacing);
+}
+@utility border-bs {
+  border-block-start-style: solid;
+  border-block-start-width: 1px;
+}
+@utility border-be {
+  border-block-end-style: solid;
+  border-block-end-width: 1px;
+}
+@utility inset-bs-* {
+  inset-block-start: --value(--spacing);
+}
+@utility inset-be-* {
+  inset-block-end: --value(--spacing);
+}
+
 @theme {
   --color-bg-primary: var(--theme-bg-primary, #ffffff);
   --color-bg-secondary: var(--theme-bg-secondary, #f9fafb);

@@ -122,7 +122,7 @@ export const ThemePicker = ({ activeThemeId, onThemeChange, t }: ThemePickerProp
   return (
     <div>
       {/* Built-in themes */}
-      <h4 className="mb-2 text-xs font-semibold text-text-tertiary uppercase">{t("theme.picker.builtIn")}</h4>
+      <h4 className="mbe-2 text-xs font-semibold text-text-tertiary uppercase">{t("theme.picker.builtIn")}</h4>
       <div className="grid grid-cols-3 gap-2">
         {builtInThemes.map((theme) => (
           <ThemeCard
@@ -140,9 +140,7 @@ export const ThemePicker = ({ activeThemeId, onThemeChange, t }: ThemePickerProp
       {/* Custom themes */}
       {customThemes.length > 0 && (
         <>
-          <h4 className="mb-2 text-xs font-semibold text-text-tertiary uppercase [margin-block-start:1rem]">
-            {t("theme.picker.custom")}
-          </h4>
+          <h4 className="mbe-2 mbs-4 text-xs font-semibold text-text-tertiary uppercase">{t("theme.picker.custom")}</h4>
           <div className="grid grid-cols-3 gap-2">
             {customThemes.map((theme) => (
               <ThemeCard
@@ -173,7 +171,7 @@ export const ThemePicker = ({ activeThemeId, onThemeChange, t }: ThemePickerProp
         <ThemeImportButton onImported={handleImported} onError={setError} t={t} />
       </div>
 
-      {error && <p className="mt-2 text-xs text-status-error">{error}</p>}
+      {error && <p className="mbs-2 text-xs text-status-error">{error}</p>}
 
       {editorOpen && (
         <ThemeEditorModal

@@ -105,7 +105,7 @@ export const ThemeEditorModal = ({ initialTheme, onSave, onCancel, t }: ThemeEdi
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 [padding-block-start:2rem]">
       <div className="flex max-h-[calc(100vh-4rem)] w-[36rem] flex-col rounded-lg bg-bg-primary shadow-xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border-primary px-5 py-3">
+        <div className="flex items-center justify-between border-be border-border-primary px-5 py-3">
           <h3 className="text-sm font-semibold text-text-primary">
             {t(isEditing ? "theme.editor.title.edit" : "theme.editor.title.create")}
           </h3>
@@ -134,7 +134,7 @@ export const ThemeEditorModal = ({ initialTheme, onSave, onCancel, t }: ThemeEdi
         <div className="flex-1 overflow-y-auto px-5 py-4">
           {/* Name */}
           <div className="[margin-block-end:1rem]">
-            <label className="mb-1 block text-xs font-medium text-text-secondary">{t("theme.editor.name")}</label>
+            <label className="mbe-1 block text-xs font-medium text-text-secondary">{t("theme.editor.name")}</label>
             <input
               type="text"
               value={name}
@@ -145,7 +145,7 @@ export const ThemeEditorModal = ({ initialTheme, onSave, onCancel, t }: ThemeEdi
 
           {/* Color scheme */}
           <div className="[margin-block-end:1rem]">
-            <label className="mb-1 block text-xs font-medium text-text-secondary">
+            <label className="mbe-1 block text-xs font-medium text-text-secondary">
               {t("theme.editor.colorScheme")}
             </label>
             <div className="flex gap-2">
@@ -169,7 +169,7 @@ export const ThemeEditorModal = ({ initialTheme, onSave, onCancel, t }: ThemeEdi
           {/* Color groups */}
           {COLOR_GROUPS.map((group) => (
             <div key={group.labelKey} className="[margin-block-end:1rem]">
-              <h4 className="mb-1 text-xs font-semibold text-text-tertiary uppercase">{t(group.labelKey)}</h4>
+              <h4 className="mbe-1 text-xs font-semibold text-text-tertiary uppercase">{t(group.labelKey)}</h4>
               {group.keys.map((key) => (
                 <ColorTokenEditor
                   key={key}
@@ -184,7 +184,7 @@ export const ThemeEditorModal = ({ initialTheme, onSave, onCancel, t }: ThemeEdi
 
           {/* Spacing */}
           <div className="[margin-block-end:1rem]">
-            <h4 className="mb-1 text-xs font-semibold text-text-tertiary uppercase">{t("theme.editor.spacing")}</h4>
+            <h4 className="mbe-1 text-xs font-semibold text-text-tertiary uppercase">{t("theme.editor.spacing")}</h4>
             {SPACING_KEYS.map((key) => (
               <div key={key} className="flex items-center gap-3 py-1.5">
                 <span className="min-w-0 flex-1 truncate text-xs text-text-secondary">{t(`theme.spacing.${key}`)}</span>
@@ -200,7 +200,7 @@ export const ThemeEditorModal = ({ initialTheme, onSave, onCancel, t }: ThemeEdi
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-2 border-t border-border-primary px-5 py-3">
+        <div className="flex justify-end gap-2 border-bs border-border-primary px-5 py-3">
           <button
             type="button"
             onClick={onCancel}

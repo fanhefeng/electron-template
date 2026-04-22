@@ -83,7 +83,7 @@ export const SettingsApp = () => {
     >
       {/* Sidebar */}
       <nav className="flex w-44 shrink-0 flex-col border-e border-border-primary bg-bg-secondary px-3 py-5">
-        <h2 className="mb-4 ps-2 text-xs font-semibold tracking-wide text-text-tertiary uppercase">
+        <h2 className="mbe-4 ps-2 text-xs font-semibold tracking-wide text-text-tertiary uppercase">
           {t("settings.title")}
         </h2>
         <ul className="flex flex-col gap-0.5">
@@ -111,7 +111,7 @@ export const SettingsApp = () => {
       {/* Content */}
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex-1 overflow-y-auto px-6 py-5">
-          <h3 className="mb-4 text-base font-semibold text-text-primary">
+          <h3 className="mbe-4 text-base font-semibold text-text-primary">
             {t(NAV_ITEMS.find((n) => n.id === activeSection)?.labelKey ?? "")}
           </h3>
 
@@ -123,7 +123,7 @@ export const SettingsApp = () => {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center gap-3 border-t border-border-primary px-6 py-3">
+        <div className="flex items-center gap-3 border-bs border-border-primary px-6 py-3">
           <button
             type="submit"
             className="rounded-lg bg-accent-primary px-4 py-1.5 text-sm font-medium text-text-inverse shadow-sm transition-colors hover:bg-accent-hover active:bg-accent-active"
