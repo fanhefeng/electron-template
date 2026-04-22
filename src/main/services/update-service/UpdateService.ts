@@ -5,6 +5,7 @@ import type { ProgressInfo } from "electron-updater";
 import { logger } from "../logger-service";
 import { i18nService } from "../i18n-service";
 import type { SystemService } from "../system-service";
+import { IPC_CHANNELS } from "../../../shared/ipcChannels";
 import * as path from "path";
 
 const toErrorMessage = (error: unknown): string => (error instanceof Error ? error.message : String(error));
@@ -61,7 +62,7 @@ export class UpdateService {
     logger.info("Checking for updates");
     autoUpdater.checkForUpdates().catch((error) => {
       logger.error("Failed to check for updates", error);
-      this.window?.webContents.send("update-error", toErrorMessage(error));
+      this.window?.webContents.send(IPC_CHANNELS.UPDATE_ERROR, toErrorMessage(error));
       if (this.window && this.window === browserWindow) {
         dialog.showErrorBox(i18nService.t("notification.update.error.title"), toErrorMessage(error));
       }
@@ -77,7 +78,7 @@ export class UpdateService {
         this.downloadUpdate();
       }
 
-      this.window?.webContents.send("update-download-pending");
+      this.window?.webContents.send(IPC_CHANNELS.UPDATE_DOWNLOAD_PENDING);
       return;
     }
 
@@ -108,7 +109,7 @@ export class UpdateService {
 
   private handleUpdateAvailable = (): void => {
     logger.info("Update available");
-    this.window?.webContents.send("update-available");
+    this.window?.webContents.send(IPC_CHANNELS.UPDATE_AVAILABLE);
     this.systemService?.showNotification(
       i18nService.t("notification.update.available.title"),
       i18nService.t("notification.update.available.body")
@@ -122,7 +123,7 @@ export class UpdateService {
     logger.info("No updates available");
     this.isDownloading = false;
     this.isDownloaded = false;
-    this.window?.webContents.send("update-not-available");
+    this.window?.webContents.send(IPC_CHANNELS.UPDATE_NOT_AVAILABLE);
     this.systemService?.showNotification(
       i18nService.t("notification.update.notAvailable.title"),
       i18nService.t("notification.update.notAvailable.body")
@@ -132,7 +133,7 @@ export class UpdateService {
   private handleError = (error: unknown): void => {
     logger.error("Update error", error);
     this.isDownloading = false;
-    this.window?.webContents.send("update-error", toErrorMessage(error));
+    this.window?.webContents.send(IPC_CHANNELS.UPDATE_ERROR, toErrorMessage(error));
     this.systemService?.showNotification(
       i18nService.t("notification.update.error.title"),
       i18nService.t("notification.update.error.body")
@@ -141,14 +142,14 @@ export class UpdateService {
 
   private handleDownloadProgress = (progress: ProgressInfo): void => {
     logger.info("Update download progress", progress);
-    this.window?.webContents.send("update-download-progress", progress);
+    this.window?.webContents.send(IPC_CHANNELS.UPDATE_DOWNLOAD_PROGRESS, progress);
   };
 
   private handleUpdateDownloaded = (): void => {
     logger.info("Update downloaded");
     this.isDownloading = false;
     this.isDownloaded = true;
-    this.window?.webContents.send("update-downloaded");
+    this.window?.webContents.send(IPC_CHANNELS.UPDATE_DOWNLOADED);
     this.systemService?.showNotification(
       i18nService.t("notification.update.ready.title"),
       i18nService.t("notification.update.ready.body")
@@ -172,7 +173,7 @@ export class UpdateService {
     autoUpdater.downloadUpdate().catch((error) => {
       this.isDownloading = false;
       logger.error("Failed to download update", error);
-      this.window?.webContents.send("update-error", toErrorMessage(error));
+      this.window?.webContents.send(IPC_CHANNELS.UPDATE_ERROR, toErrorMessage(error));
       this.systemService?.showNotification(
         i18nService.t("notification.update.downloadFailed.title"),
         i18nService.t("notification.update.downloadFailed.body")

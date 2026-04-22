@@ -19,6 +19,12 @@ export const IPC_CHANNELS = {
   EXPORT_THEME: "theme/export",
   GET_ACTIVE_THEME: "theme/active",
   THEME_UPDATED: "theme:updated",
+  UPDATE_AVAILABLE: "update:available",
+  UPDATE_NOT_AVAILABLE: "update:not-available",
+  UPDATE_ERROR: "update:error",
+  UPDATE_DOWNLOAD_PENDING: "update:download-pending",
+  UPDATE_DOWNLOAD_PROGRESS: "update:download-progress",
+  UPDATE_DOWNLOADED: "update:downloaded",
 } as const;
 
 export type IpcChannel = (typeof IPC_CHANNELS)[keyof typeof IPC_CHANNELS];
