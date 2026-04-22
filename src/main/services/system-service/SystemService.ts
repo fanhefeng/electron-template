@@ -52,7 +52,7 @@ export class SystemService {
       return;
     }
 
-    const iconPath = resourceService.getStaticResourcePath("icons", "icon.icns");
+    const iconPath = resourceService.getStaticResourcePath("icons", "icon.png");
     const icon = nativeImage.createFromPath(iconPath);
 
     const notification = new Notification({
