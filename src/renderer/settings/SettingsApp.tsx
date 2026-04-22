@@ -73,7 +73,7 @@ export const SettingsApp = () => {
     const previousSettings = { ...settings };
     window.settingsAPI
       ?.updateSettings(settings)
-      .then((updated) => setSettings(updated))
+      .then(() => window.close())
       .catch((error) => {
         logger.error("save-failed", String(error));
         setSettings(previousSettings);

@@ -44,6 +44,7 @@ export const zhCN: Record<string, string> = {
   "settings.theme.dark": "深色",
   "settings.autoLaunch": "开机自动启动",
   "settings.notifications": "启用通知",
+  "settings.minimizeToTray": "关闭时最小化到托盘",
   "settings.font.label": "字体",
   "settings.font.preview": "字体预览：敏捷的棕色狐狸跳过了懒狗。",
   "settings.locale.label": "语言",
@@ -165,7 +166,18 @@ export const zhCN: Record<string, string> = {
   "menu.window.minimize": "最小化",
   "menu.window.close": "关闭",
 
+  // Menu — Dev (development only)
+  "menu.dev": "开发",
+  "menu.dev.reload": "重新加载",
+  "menu.dev.toggleDevTools": "切换开发者工具",
+
   // Menu — Help
   "menu.help": "帮助",
   "menu.help.viewLogs": "查看日志",
+
+  // Tray
+  "tray.show": "显示窗口",
+  "tray.settings": "设置\u2026",
+  "tray.about": "关于",
+  "tray.quit": "退出",
 };

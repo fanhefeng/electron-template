@@ -19,6 +19,13 @@ export const GeneralSection = ({ settings, onUpdate, t }: SettingsSectionProps) 
           ariaLabel={t("settings.notifications")}
         />
       </SettingRow>
+      <SettingRow label={t("settings.minimizeToTray")}>
+        <ToggleSwitch
+          checked={settings.minimizeToTray}
+          onChange={(checked) => onUpdate({ minimizeToTray: checked })}
+          ariaLabel={t("settings.minimizeToTray")}
+        />
+      </SettingRow>
     </div>
   );
 };

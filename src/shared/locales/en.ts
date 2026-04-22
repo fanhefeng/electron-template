@@ -44,6 +44,7 @@ export const en: Record<string, string> = {
   "settings.theme.dark": "Dark",
   "settings.autoLaunch": "Auto Launch at startup",
   "settings.notifications": "Enable Notifications",
+  "settings.minimizeToTray": "Minimize to tray on close",
   "settings.font.label": "Font Family",
   "settings.font.preview": "Font Preview: The quick brown fox jumps over the lazy dog.",
   "settings.locale.label": "Language",
@@ -165,7 +166,18 @@ export const en: Record<string, string> = {
   "menu.window.minimize": "Minimize",
   "menu.window.close": "Close",
 
+  // Menu — Dev (development only)
+  "menu.dev": "Dev",
+  "menu.dev.reload": "Reload",
+  "menu.dev.toggleDevTools": "Toggle DevTools",
+
   // Menu — Help
   "menu.help": "Help",
   "menu.help.viewLogs": "View Logs",
+
+  // Tray
+  "tray.show": "Show Window",
+  "tray.settings": "Settings\u2026",
+  "tray.about": "About",
+  "tray.quit": "Quit",
 };

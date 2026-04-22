@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from "electron";
+import { app } from "electron";
 import { registerIpcHandlers } from "./ipc/handlers";
 import { AboutWindow } from "./windows/AboutWindow";
 import { MainWindow } from "./windows/MainWindow";
@@ -12,6 +12,7 @@ import { systemService } from "./services/system-service";
 import { protocolService } from "./services/protocol-service";
 import { deepLinkService } from "./services/deep-link-service";
 import { updateService } from "./services/update-service";
+import { trayService } from "./services/tray-service";
 import { fontService } from "./services/font-service";
 import { ensureLoaded as ensureSettingsLoaded } from "./ipc/handlers/settingsHandler";
 import { buildAppMenu } from "./menu";
@@ -30,9 +31,11 @@ export class MainApp {
     deepLinkService.setWindowManager(this.windowManager);
     await ensureSettingsLoaded();
     buildAppMenu(this.windowManager);
+    trayService.initialize(this.windowManager);
     downloadService.monitorDownloads();
 
     const mainWindow = this.windowManager.open("main");
+    trayService.attachMainWindow(mainWindow);
     registerUpdaterListeners(mainWindow, this.systemService);
 
     this.setupAppListeners();
@@ -46,20 +49,24 @@ export class MainApp {
 
   private setupAppListeners(): void {
     app.on("activate", () => {
-      if (BrowserWindow.getAllWindows().length === 0) {
-        this.windowManager.open("main");
+      const mainWindow = this.windowManager.getBrowserWindow("main");
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.show();
+        mainWindow.focus();
+      } else {
+        const newWindow = this.windowManager.open("main");
+        trayService.attachMainWindow(newWindow);
       }
     });
 
     app.on("window-all-closed", () => {
-      if (process.platform !== "darwin") {
-        logger.info("All windows closed, quitting app");
-        app.quit();
-      }
+      logger.info("All windows closed, quitting app");
+      app.quit();
     });
 
     app.on("before-quit", () => {
       logger.info("App quitting, cleaning up services");
+      trayService.cleanup();
       updateService.cleanup();
       downloadService.cleanup();
       fontService.invalidateCache();

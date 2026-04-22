@@ -8,6 +8,7 @@ export interface AppSettings {
   themeId: ThemeId;
   autoLaunch: boolean;
   enableNotifications: boolean;
+  minimizeToTray: boolean;
   fontFamily: FontPreference;
   locale: LocalePreference;
 }
@@ -16,6 +17,7 @@ export const defaultSettings: AppSettings = {
   themeId: "builtin-light",
   autoLaunch: false,
   enableNotifications: true,
+  minimizeToTray: false,
   fontFamily: SYSTEM_FONT_ID,
   locale: "system",
 };
@@ -45,6 +47,9 @@ export const sanitizeSettings = (raw: Record<string, unknown>): Partial<AppSetti
   }
   if ("enableNotifications" in raw && typeof raw.enableNotifications === "boolean") {
     result.enableNotifications = raw.enableNotifications;
+  }
+  if ("minimizeToTray" in raw && typeof raw.minimizeToTray === "boolean") {
+    result.minimizeToTray = raw.minimizeToTray;
   }
   if ("fontFamily" in raw && typeof raw.fontFamily === "string" && raw.fontFamily.length > 0) {
     result.fontFamily = raw.fontFamily;

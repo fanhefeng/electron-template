@@ -6,6 +6,8 @@ import { getEnvConfig } from "./environment";
 
 // 在所有 app.getPath() 调用之前设置 app name，实现开发/生产数据路径隔离
 app.setName(getEnvConfig().appName);
+// 重新配置日志路径，确保使用隔离后的 app name（import 阶段的日志已写入旧路径）
+logger.reconfigure();
 
 process.on("uncaughtException", (error) => {
   logger.error("Uncaught exception", error);
@@ -28,10 +30,11 @@ if (!gotLock) {
     if (url) {
       deepLinkService.handle(deepLinkService.parse(url));
     } else {
-      // 无 deep link 时聚焦主窗口
+      // 无 deep link 时显示并聚焦主窗口（可能被隐藏到托盘）
       const windowManager = mainApp.getWindowManager();
       const mainWin = windowManager.getBrowserWindow("main");
       if (mainWin && !mainWin.isDestroyed()) {
+        mainWin.show();
         if (mainWin.isMinimized()) mainWin.restore();
         mainWin.focus();
       }

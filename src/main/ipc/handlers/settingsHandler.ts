@@ -11,6 +11,7 @@ import { fontService } from "../../services/font-service";
 import { i18nService } from "../../services/i18n-service";
 import { themeService } from "../../services/theme-service";
 import { systemService } from "../../services/system-service";
+import { trayService } from "../../services/tray-service";
 
 let cachedSettings: AppSettings = { ...defaultSettings };
 let loadPromise: Promise<void> | null = null;
@@ -44,6 +45,7 @@ export const ensureLoaded = (): Promise<void> => {
     }
     i18nService.setLocale(cachedSettings.locale);
     systemService.setNotificationsEnabled(cachedSettings.enableNotifications);
+    trayService.setMinimizeToTray(cachedSettings.minimizeToTray);
     try {
       const currentAutoLaunch = systemService.getAutoLaunchEnabled();
       if (currentAutoLaunch !== cachedSettings.autoLaunch) {
@@ -108,6 +110,12 @@ export const updateSettings = async (
     );
     systemService.setNotificationsEnabled(settings.enableNotifications);
   }
+  if (settings.minimizeToTray !== undefined && settings.minimizeToTray !== previousSettings.minimizeToTray) {
+    logger.info(
+      `Settings: minimizeToTray changed from ${previousSettings.minimizeToTray} to ${settings.minimizeToTray}`
+    );
+    trayService.setMinimizeToTray(settings.minimizeToTray);
+  }
   if (settings.autoLaunch !== undefined && settings.autoLaunch !== previousSettings.autoLaunch) {
     try {
       logger.info(`Settings: autoLaunch changed from ${previousSettings.autoLaunch} to ${settings.autoLaunch}`);
@@ -121,6 +129,7 @@ export const updateSettings = async (
   }
   if (settings.locale !== undefined && settings.locale !== previousSettings.locale) {
     i18nService.setLocale(settings.locale);
+    trayService.rebuildMenu();
   }
   BrowserWindow.getAllWindows().forEach((win) => {
     if (!win.isDestroyed()) {
