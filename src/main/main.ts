@@ -2,6 +2,17 @@ import { app } from "electron";
 import { MainApp } from "./MainApp";
 import { logger } from "./services/logger-service";
 import { deepLinkService } from "./services/deep-link-service";
+import { getEnvConfig } from "./environment";
+
+// 在所有 app.getPath() 调用之前设置 app name，实现开发/生产数据路径隔离
+app.setName(getEnvConfig().appName);
+
+process.on("uncaughtException", (error) => {
+  logger.error("Uncaught exception", error);
+});
+process.on("unhandledRejection", (reason) => {
+  logger.error("Unhandled rejection", reason);
+});
 
 const mainApp = new MainApp();
 

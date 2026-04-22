@@ -14,9 +14,11 @@ export const APP_CONFIG = {
   /** 按环境区分的配置 */
   env: {
     development: {
+      appName: "electron-template-dev",
       deepLinkScheme: "electrontemplate-dev",
     },
     production: {
+      appName: "ElectronTemplate",
       deepLinkScheme: "electrontemplate",
     },
   },
