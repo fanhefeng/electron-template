@@ -1,10 +1,23 @@
-import { shell } from "electron";
+import { app, shell } from "electron";
+import path from "node:path";
 import log from "electron-log";
 
 export class LoggerService {
   constructor() {
-    log.transports.console.level = "silly";
+    const isDev = !app.isPackaged;
+    log.transports.console.level = isDev ? "silly" : "warn";
     log.transports.file.level = "info";
+  }
+
+  /**
+   * Re-resolve the log file path based on the current app name.
+   * Must be called after app.setName() to ensure environment isolation.
+   */
+  reconfigure(): void {
+    const logsDir = app.getPath("logs");
+    const logPath = path.join(logsDir, "main.log");
+    log.transports.file.resolvePathFn = () => logPath;
+    log.info(`[logger] reconfigured log path: ${logPath}`);
   }
 
   getLogFilePath(): string {

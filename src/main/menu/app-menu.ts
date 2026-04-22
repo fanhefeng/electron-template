@@ -1,10 +1,11 @@
-import { app, Menu } from "electron";
+import { app, BrowserWindow, Menu } from "electron";
 import type { MenuItemConstructorOptions } from "electron";
 import { logger } from "../services/logger-service";
 import { i18nService } from "../services/i18n-service";
 import type { WindowManager } from "../window-manager/WindowManager";
 
 const isMac = process.platform === "darwin";
+const isDev = !app.isPackaged;
 
 export const buildAppMenu = (windowManager: WindowManager): void => {
   logger.info("[menu] buildAppMenu called");
@@ -89,9 +90,26 @@ export const buildAppMenu = (windowManager: WindowManager): void => {
     ],
   };
 
+  const devMenu: MenuItemConstructorOptions = {
+    label: t("menu.dev"),
+    submenu: [
+      {
+        label: t("menu.dev.reload"),
+        accelerator: "CmdOrCtrl+R",
+        click: () => BrowserWindow.getFocusedWindow()?.webContents.reload(),
+      },
+      {
+        label: t("menu.dev.toggleDevTools"),
+        accelerator: isMac ? "Cmd+Option+I" : "F12",
+        click: () => BrowserWindow.getFocusedWindow()?.webContents.toggleDevTools(),
+      },
+    ],
+  };
+
   const template: MenuItemConstructorOptions[] = [
     ...(isMac ? [macAppMenu] : [fileMenu]),
     editMenu,
+    ...(isDev ? [devMenu] : []),
     ...(isMac ? [windowMenu] : []),
     helpMenu,
   ];

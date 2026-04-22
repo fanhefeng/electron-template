@@ -4,7 +4,7 @@ import { getMessages, resolveLocale } from "../../../shared/locales";
 import type { SupportedLocale, LocalePreference } from "../../../shared/locales";
 
 export class I18nService {
-  private locale: SupportedLocale = this.detectLocale();
+  private locale: SupportedLocale = "en";
 
   private detectLocale(): SupportedLocale {
     try {
