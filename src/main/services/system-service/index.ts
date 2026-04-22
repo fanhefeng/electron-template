@@ -1,1 +1,1 @@
-export { SystemService } from "./SystemService";
+export { SystemService, systemService } from "./SystemService";

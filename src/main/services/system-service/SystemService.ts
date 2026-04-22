@@ -1,4 +1,4 @@
-import { Notification, clipboard } from "electron";
+import { app, Notification, clipboard } from "electron";
 import { promises as fs } from "node:fs";
 import type { NativeImage, BrowserWindow } from "electron";
 import { logger } from "../logger-service";
@@ -10,9 +10,28 @@ interface SaveScreenshotOptions {
 }
 
 export class SystemService {
+  setAutoLaunch(enabled: boolean): void {
+    logger.info(`SystemService.setAutoLaunch called, enabled=${enabled}`);
+    try {
+      app.setLoginItemSettings({ openAtLogin: enabled });
+      logger.info(`SystemService.setAutoLaunch success, openAtLogin=${enabled}`);
+    } catch (error) {
+      logger.error("SystemService.setAutoLaunch failed", error);
+      throw error;
+    }
+  }
+
+  getAutoLaunchEnabled(): boolean {
+    logger.debug("SystemService.getAutoLaunchEnabled called");
+    const settings = app.getLoginItemSettings();
+    logger.debug(`SystemService.getAutoLaunchEnabled result: openAtLogin=${settings.openAtLogin}`);
+    return settings.openAtLogin;
+  }
+
   showNotification(title: string, body: string): void {
+    logger.info(`SystemService.showNotification called, title="${title}"`);
     if (!Notification.isSupported()) {
-      logger.warn("Notifications are not supported on this platform");
+      logger.warn("SystemService.showNotification: notifications not supported on this platform");
       return;
     }
 
@@ -22,20 +41,26 @@ export class SystemService {
     });
 
     notification.show();
+    logger.info("SystemService.showNotification: notification shown");
   }
 
   writeClipboardText(text: string): void {
+    logger.info("SystemService.writeClipboardText called");
     clipboard.writeText(text);
-    logger.debug("Clipboard updated");
+    logger.debug("SystemService.writeClipboardText: clipboard updated");
   }
 
   readClipboardText(): string {
-    return clipboard.readText();
+    logger.debug("SystemService.readClipboardText called");
+    const text = clipboard.readText();
+    logger.debug("SystemService.readClipboardText: read complete");
+    return text;
   }
 
   clearClipboard(): void {
+    logger.info("SystemService.clearClipboard called");
     clipboard.clear();
-    logger.debug("Clipboard cleared");
+    logger.debug("SystemService.clearClipboard: clipboard cleared");
   }
 
   async captureWindowScreenshot(window: BrowserWindow): Promise<NativeImage | null> {
@@ -70,3 +95,5 @@ export class SystemService {
     }
   }
 }
+
+export const systemService = new SystemService();
