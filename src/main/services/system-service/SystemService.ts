@@ -1,5 +1,6 @@
 import { app, Notification, clipboard, nativeImage } from "electron";
 import { promises as fs } from "node:fs";
+import path from "node:path";
 import type { NativeImage, BrowserWindow } from "electron";
 import { logger } from "../logger-service";
 import { resourceService } from "../resource-service";
@@ -126,7 +127,9 @@ export class SystemService {
     }
 
     const directory = options.directory ?? resourceService.getTempDirectory("screenshots");
-    const filename = options.filename ?? `screenshot-${Date.now()}.png`;
+    // Strip any path segments from a caller-supplied filename so it can never
+    // escape `directory` (mirrors DownloadService); future IPC exposure stays safe.
+    const filename = path.basename(options.filename ?? `screenshot-${Date.now()}.png`);
     const filePath = resourceService.resolvePath(directory, filename);
 
     try {

@@ -69,9 +69,12 @@ export class ProtocolService {
           logger.warn(`[service:protocol] Blocked access outside fonts directory: ${resolved}`);
           return new Response(null, { status: 403 });
         }
-        const extension = path.extname(filePath).slice(1).toLowerCase();
+        // Read and type the path that was actually validated (resolved), not the
+        // pre-normalization filePath, so the checked target and the served target
+        // can never diverge.
+        const extension = path.extname(resolved).slice(1).toLowerCase();
         const mimeType = FONT_MIME_TYPES[extension] ?? "application/octet-stream";
-        const data = await fs.readFile(filePath);
+        const data = await fs.readFile(resolved);
 
         return new Response(data, {
           headers: {

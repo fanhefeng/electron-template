@@ -95,9 +95,10 @@ export const SettingsApp = () => {
 
   const handleUpdate = useCallback(
     (patch: Partial<AppSettings>) => {
-      const key = Object.keys(patch)[0];
-      const val = Object.values(patch)[0];
-      logger.change(String(key), String(val));
+      // Log every key in the patch (not just the first): the signature allows
+      // multi-key patches, and the action log must stay complete enough to
+      // reconstruct every setting the user changed.
+      Object.entries(patch).forEach(([key, val]) => logger.change(key, String(val)));
       dirtyRef.current = true;
       setSettings((prev) => ({ ...prev, ...patch }));
     },
