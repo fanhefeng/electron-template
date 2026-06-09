@@ -48,10 +48,6 @@ export class LoggerService {
   debug(message: string, ...meta: unknown[]): void {
     log.debug(message, ...meta);
   }
-
-  log(message: string, ...meta: unknown[]): void {
-    log.log(message, ...meta);
-  }
 }
 
 export const logger = new LoggerService();

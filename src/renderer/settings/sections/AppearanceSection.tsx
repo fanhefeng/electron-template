@@ -8,9 +8,10 @@ import type { SettingsSectionProps } from "./types";
 
 interface AppearanceSectionProps extends SettingsSectionProps {
   fonts: FontAsset[];
+  onThemeChange: (themeId: string) => void;
 }
 
-export const AppearanceSection = ({ settings, fonts, onUpdate, t }: AppearanceSectionProps) => {
+export const AppearanceSection = ({ settings, fonts, onUpdate, onThemeChange, t }: AppearanceSectionProps) => {
   const currentFont = useMemo(() => fonts.find((f) => f.id === settings.fontFamily), [fonts, settings.fontFamily]);
 
   const previewFontFamily = useMemo(() => {
@@ -20,26 +21,25 @@ export const AppearanceSection = ({ settings, fonts, onUpdate, t }: AppearanceSe
     return `"${currentFont.cssFamily}", ${SYSTEM_FONT_STACK}`;
   }, [currentFont]);
 
-  const handleThemeChange = (themeId: string) => {
-    onUpdate({ themeId });
-  };
-
   return (
     <div>
-      {/* Theme picker */}
-      <ThemePicker activeThemeId={settings.themeId} onThemeChange={handleThemeChange} t={t} />
+      {/* Theme picker — selection applies immediately (no Save needed) */}
+      <ThemePicker activeThemeId={settings.themeId} onThemeChange={onThemeChange} t={t} />
 
       {/* Font selector */}
       <div className="divide-y divide-border-primary [margin-block-start:1.5rem]">
-        <SettingRow label={t("settings.font.label")}>
+        <SettingRow label={t("settings.font.label")} htmlFor="setting-font">
           <select
+            id="setting-font"
             value={settings.fontFamily}
             onChange={(e) => onUpdate({ fontFamily: e.target.value })}
             className={selectClass}
           >
             {fonts.map((font) => (
               <option key={font.id} value={font.id}>
-                {font.label}
+                {/* The system font's label is resolved through i18n (same pattern
+                    as built-in theme names); file-derived labels stay literal. */}
+                {font.id === SYSTEM_FONT_ID ? t("settings.font.systemDefault") : font.label}
               </option>
             ))}
           </select>

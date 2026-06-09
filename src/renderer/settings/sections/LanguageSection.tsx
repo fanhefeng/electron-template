@@ -6,8 +6,9 @@ import type { SettingsSectionProps } from "./types";
 export const LanguageSection = ({ settings, onUpdate, t }: SettingsSectionProps) => {
   return (
     <div className="divide-y divide-border-primary">
-      <SettingRow label={t("settings.locale.label")}>
+      <SettingRow label={t("settings.locale.label")} htmlFor="setting-locale">
         <select
+          id="setting-locale"
           value={settings.locale}
           onChange={(e) => onUpdate({ locale: e.target.value as AppSettings["locale"] })}
           className={selectClass}

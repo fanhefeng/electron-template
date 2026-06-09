@@ -27,16 +27,24 @@ if (!gotLock) {
   // Windows/Linux: 第二个实例启动时，deep link URL 在 argv 中
   app.on("second-instance", (_event, argv) => {
     const url = deepLinkService.extractFromArgv(argv);
-    if (url) {
-      deepLinkService.handle(deepLinkService.parse(url));
-    } else {
-      // 无 deep link 时显示并聚焦主窗口（可能被隐藏到托盘）
-      const windowManager = mainApp.getWindowManager();
-      const mainWin = windowManager.getBrowserWindow("main");
-      if (mainWin && !mainWin.isDestroyed()) {
-        mainWin.show();
-        if (mainWin.isMinimized()) mainWin.restore();
-        mainWin.focus();
+    const payload = url ? deepLinkService.parse(url) : null;
+    if (payload) {
+      // deepLinkService queues the payload until its WindowManager is set
+      // (after whenReady), so this is safe even pre-ready.
+      deepLinkService.handle(payload);
+    } else if (app.isReady()) {
+      // 无【有效】deep link 时显示并聚焦主窗口（可能被隐藏到托盘）。畸形深链
+      // （extractFromArgv 命中前缀但 parse 失败）也落到这里 —— 用户点了链接
+      // 期望 app 到前台，而不是毫无反应。open() 复用现有窗口并统一处理
+      // restore/show/focus，若主窗口已被销毁则重新创建并重挂托盘。
+      // Guard on app.isReady(): a second launch arriving before the first
+      // instance finishes whenReady must not call new BrowserWindow() too early.
+      // try/catch keeps a failed re-creation out of the event emitter —
+      // consistent with every other open() call site (menu/tray/deep-link).
+      try {
+        mainApp.getWindowManager().open("main");
+      } catch (error) {
+        logger.error("Failed to open main window from second-instance", error);
       }
     }
   });

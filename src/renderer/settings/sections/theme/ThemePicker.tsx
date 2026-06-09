@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import type { ThemeDefinition, ThemeId } from "@shared/theme";
-import { DEFAULT_THEME_ID } from "@shared/themes";
 import { ThemeCard } from "./ThemeCard";
 import { ThemeEditorModal } from "./ThemeEditorModal";
 import { ThemeImportButton, exportThemeToFile } from "./ThemeImportExport";
+import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { useLogger } from "../../../hooks/useLogger";
 
 interface ThemePickerProps {
@@ -17,6 +17,8 @@ export const ThemePicker = ({ activeThemeId, onThemeChange, t }: ThemePickerProp
   const [editorOpen, setEditorOpen] = useState(false);
   const [editingTheme, setEditingTheme] = useState<ThemeDefinition | undefined>();
   const [error, setError] = useState("");
+  // id of the theme awaiting delete confirmation (null = no dialog open).
+  const [pendingDeleteId, setPendingDeleteId] = useState<ThemeId | null>(null);
   const logger = useLogger("ThemePicker");
 
   const loadThemes = useCallback(() => {
@@ -32,6 +34,19 @@ export const ThemePicker = ({ activeThemeId, onThemeChange, t }: ThemePickerProp
     loadThemes();
   }, [loadThemes]);
 
+  useEffect(() => {
+    // Keep the list fresh when themes change elsewhere (another window's edit,
+    // live re-apply of the active theme) — without this the picker shows a
+    // stale set until remount.
+    const appBridge = window.app;
+    if (!appBridge) return;
+    const handleThemeUpdated = () => loadThemes();
+    appBridge.onThemeUpdated(handleThemeUpdated);
+    return () => {
+      appBridge.offThemeUpdated(handleThemeUpdated);
+    };
+  }, [loadThemes]);
+
   const handleSelect = (id: ThemeId) => {
     logger.click(`select theme: ${id}`);
     onThemeChange(id);
@@ -45,17 +60,30 @@ export const ThemePicker = ({ activeThemeId, onThemeChange, t }: ThemePickerProp
     }
   };
 
-  const handleDelete = async (id: ThemeId) => {
-    if (!confirm(t("theme.picker.deleteConfirm"))) return;
+  const handleDelete = (id: ThemeId) => {
+    // Open the accessible confirm dialog instead of the native blocking
+    // confirm() (whose OS-provided buttons can't be localized or themed).
+    logger.click(`request delete theme: ${id}`);
+    setPendingDeleteId(id);
+  };
+
+  const confirmDelete = async () => {
+    if (pendingDeleteId === null) return;
+    const id = pendingDeleteId;
+    setPendingDeleteId(null);
     try {
       await window.settingsAPI?.deleteTheme(id);
       setError("");
-      if (activeThemeId === id) {
-        onThemeChange(DEFAULT_THEME_ID);
-      }
+      // No onThemeChange here: when the deleted theme was active, the main-side
+      // handler already persisted themeId=default and broadcast settings:updated
+      // (which updates this picker's activeThemeId) — a renderer call would just
+      // write the same value to disk a second time.
       loadThemes();
     } catch (err) {
       logger.error("delete-theme-failed", String(err));
+      // Surface the failure in the shared error slot — a silent rejection
+      // looks like the click simply did nothing.
+      setError(t("theme.picker.deleteFailed"));
     }
   };
 
@@ -64,7 +92,7 @@ export const ThemePicker = ({ activeThemeId, onThemeChange, t }: ThemePickerProp
     if (!source) return;
     try {
       const created = await window.settingsAPI?.createTheme({
-        name: `${source.builtIn ? t(source.name) : source.name} (copy)`,
+        name: `${source.builtIn ? t(source.name) : source.name}${t("theme.picker.copySuffix")}`,
         colorScheme: source.colorScheme,
         colors: { ...source.colors },
         spacing: source.spacing ? { ...source.spacing } : undefined,
@@ -76,11 +104,15 @@ export const ThemePicker = ({ activeThemeId, onThemeChange, t }: ThemePickerProp
       }
     } catch (err) {
       logger.error("duplicate-theme-failed", String(err));
+      setError(t("theme.picker.duplicateFailed"));
     }
   };
 
   const handleExport = (id: ThemeId) => {
-    exportThemeToFile(id).catch((err) => logger.error("export-theme-failed", String(err)));
+    exportThemeToFile(id).catch((err) => {
+      logger.error("export-theme-failed", String(err));
+      setError(t("theme.export.error"));
+    });
   };
 
   const handleCreate = () => {
@@ -91,10 +123,11 @@ export const ThemePicker = ({ activeThemeId, onThemeChange, t }: ThemePickerProp
   const handleEditorSave = async (data: Omit<ThemeDefinition, "id" | "builtIn">) => {
     try {
       if (editingTheme) {
+        // No onThemeChange for the active theme: ThemeService.updateTheme
+        // already re-applies + broadcasts theme:updated when the edited theme
+        // is active; re-persisting the unchanged themeId would only add a
+        // redundant disk write + broadcast.
         await window.settingsAPI?.updateTheme(editingTheme.id, data);
-        if (activeThemeId === editingTheme.id) {
-          onThemeChange(editingTheme.id);
-        }
       } else {
         const created = await window.settingsAPI?.createTheme(data);
         if (created) {
@@ -107,6 +140,10 @@ export const ThemePicker = ({ activeThemeId, onThemeChange, t }: ThemePickerProp
       loadThemes();
     } catch (err) {
       logger.error("save-theme-failed", String(err));
+      // Re-throw so the modal (which stays open with the user's edits) can
+      // show the failure inline — the picker's error slot sits BEHIND the
+      // modal overlay and would be invisible.
+      throw err;
     }
   };
 
@@ -182,6 +219,16 @@ export const ThemePicker = ({ activeThemeId, onThemeChange, t }: ThemePickerProp
             setEditingTheme(undefined);
           }}
           t={t}
+        />
+      )}
+
+      {pendingDeleteId !== null && (
+        <ConfirmDialog
+          message={t("theme.picker.deleteConfirm")}
+          confirmLabel={t("theme.picker.deleteTheme")}
+          cancelLabel={t("theme.editor.cancel")}
+          onConfirm={confirmDelete}
+          onCancel={() => setPendingDeleteId(null)}
         />
       )}
     </div>

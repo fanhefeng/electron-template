@@ -9,11 +9,8 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "types": ["vite/client"],
     "composite": true,
-    "baseUrl": "./src",
     "paths": {
-      "@main/*": ["main/*"],
-      "@renderer/*": ["renderer/*"],
-      "@shared/*": ["shared/*"]
+      "@shared/*": ["./src/shared/*"]
     }
   },
   "include": ["src/renderer/**/*"],

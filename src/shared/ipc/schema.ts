@@ -3,10 +3,13 @@ import type { FontAsset } from "../../shared/fonts";
 import type { OpenWindowPayload } from "../../shared/ipcChannels";
 import type { NotificationPayload } from "../../shared/notification";
 import type { ThemeDefinition, ThemeId, ExportedTheme } from "../../shared/theme";
+import type { DeepLinkPayload } from "../../shared/deepLink";
+import type { UpdateStateSnapshot } from "../../shared/update";
 
 export type IpcContract = {
   "app/check-for-updates": { req: void; res: void };
   "app/apply-update": { req: void; res: void };
+  "app/update-state": { req: void; res: UpdateStateSnapshot };
   "settings/get": { req: void; res: AppSettings };
   "settings/update": { req: Partial<AppSettings>; res: AppSettings };
   "fonts/list": { req: void; res: FontAsset[] };
@@ -22,6 +25,7 @@ export type IpcContract = {
   "theme/import": { req: unknown; res: ThemeDefinition };
   "theme/export": { req: ThemeId; res: ExportedTheme };
   "theme/active": { req: void; res: ThemeDefinition };
+  "deep-link/consume-pending": { req: void; res: DeepLinkPayload | null };
 };
 
 export type IpcChannel = keyof IpcContract;

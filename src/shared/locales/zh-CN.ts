@@ -24,8 +24,6 @@ export const zhCN: Record<string, string> = {
   "notification.update.error.body": "更新检查过程中出现问题。",
   "notification.update.ready.title": "更新就绪",
   "notification.update.ready.body": "新版本已下载，准备安装。",
-  "notification.update.downloadFailed.title": "下载失败",
-  "notification.update.downloadFailed.body": "无法下载更新包。",
 
   // Navigation
   "nav.about": "关于",
@@ -39,20 +37,18 @@ export const zhCN: Record<string, string> = {
   "settings.nav.general": "通用",
   "settings.nav.appearance": "外观",
   "settings.nav.language": "语言",
-  "settings.theme.label": "主题",
-  "settings.theme.light": "浅色",
-  "settings.theme.dark": "深色",
   "settings.autoLaunch": "开机自动启动",
   "settings.notifications": "启用通知",
   "settings.minimizeToTray": "关闭时最小化到托盘",
   "settings.font.label": "字体",
+  "settings.font.systemDefault": "系统默认",
   "settings.font.preview": "字体预览：敏捷的棕色狐狸跳过了懒狗。",
   "settings.locale.label": "语言",
   "settings.locale.system": "跟随系统",
   "settings.locale.en": "English",
   "settings.locale.zhCN": "中文",
   "settings.button.save": "保存设置",
-  "settings.error.saveFailed": "保存设置失败，已恢复更改。",
+  "settings.error.saveFailed": "保存设置失败，请重试。",
 
   // Theme presets
   "theme.preset.light": "浅色",
@@ -62,7 +58,6 @@ export const zhCN: Record<string, string> = {
   "theme.preset.roseLight": "玫瑰",
 
   // Theme picker
-  "theme.picker.title": "主题",
   "theme.picker.builtIn": "内置",
   "theme.picker.custom": "自定义",
   "theme.picker.createCustom": "创建自定义主题",
@@ -72,7 +67,10 @@ export const zhCN: Record<string, string> = {
   "theme.picker.duplicateTheme": "复制",
   "theme.picker.editTheme": "编辑",
   "theme.picker.deleteConfirm": "确定要删除此主题吗？",
+  "theme.picker.deleteFailed": "删除主题失败。",
+  "theme.picker.duplicateFailed": "复制主题失败。",
   "theme.picker.active": "使用中",
+  "theme.picker.copySuffix": "（副本）",
 
   // Theme editor
   "theme.editor.title.create": "创建主题",
@@ -84,6 +82,8 @@ export const zhCN: Record<string, string> = {
   "theme.editor.spacing": "间距",
   "theme.editor.save": "保存主题",
   "theme.editor.cancel": "取消",
+  "theme.editor.invalidValues": "部分颜色或间距值无效，请使用十六进制、rgb()/hsl() 或颜色名称。",
+  "theme.editor.saveFailed": "保存主题失败，请重试。",
 
   // Theme color groups
   "theme.color.group.backgrounds": "背景",
@@ -126,9 +126,8 @@ export const zhCN: Record<string, string> = {
   "theme.spacing.radiusFull": "全圆角",
 
   // Theme import/export
-  "theme.import.success": "主题导入成功。",
   "theme.import.error": "导入主题失败，文件可能无效。",
-  "theme.export.success": "主题导出成功。",
+  "theme.export.error": "导出主题失败。",
 
   // Error boundary
   "error.boundary.title": "出现错误",

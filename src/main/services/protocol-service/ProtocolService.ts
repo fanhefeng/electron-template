@@ -31,9 +31,9 @@ export class ProtocolService {
   private fontProtocolRegistered = false;
 
   registerFontProtocol(): void {
-    logger.info("[protocol] registerFontProtocol called");
+    logger.info("[service:protocol] registerFontProtocol called");
     if (this.fontProtocolRegistered) {
-      logger.debug("[protocol] Font protocol already registered, skipping");
+      logger.debug("[service:protocol] Font protocol already registered, skipping");
       return;
     }
 
@@ -43,21 +43,21 @@ export class ProtocolService {
         const host = url.hostname || FONT_HOST;
 
         if (host !== FONT_HOST) {
-          logger.warn(`[protocol] Unsupported host for font request: ${host}`);
+          logger.warn(`[service:protocol] Unsupported host for font request: ${host}`);
           return new Response(null, { status: 404 });
         }
 
         const relativePath = decodeURIComponent(url.pathname.replace(/^\/+/, ""));
 
         if (!relativePath) {
-          logger.warn("[protocol] Missing font path in request");
+          logger.warn("[service:protocol] Missing font path in request");
           return new Response(null, { status: 404 });
         }
 
         const pathSegments = relativePath.split("/").filter(Boolean);
 
         if (pathSegments.some((seg) => seg === ".." || seg === ".")) {
-          logger.warn(`[protocol] Blocked path traversal attempt: ${request.url}`);
+          logger.warn(`[service:protocol] Blocked path traversal attempt: ${request.url}`);
           return new Response(null, { status: 403 });
         }
 
@@ -66,7 +66,7 @@ export class ProtocolService {
         const resolved = path.resolve(filePath);
 
         if (!resolved.startsWith(path.resolve(fontsDir) + path.sep) && resolved !== path.resolve(fontsDir)) {
-          logger.warn(`[protocol] Blocked access outside fonts directory: ${resolved}`);
+          logger.warn(`[service:protocol] Blocked access outside fonts directory: ${resolved}`);
           return new Response(null, { status: 403 });
         }
         const extension = path.extname(filePath).slice(1).toLowerCase();
@@ -79,17 +79,20 @@ export class ProtocolService {
           },
         });
       } catch (error) {
-        logger.error(`[protocol] Failed to serve font for ${request.url}`, error);
+        logger.error(`[service:protocol] Failed to serve font for ${request.url}`, error);
         return new Response(null, { status: 404 });
       }
     });
 
     this.fontProtocolRegistered = true;
-    logger.info(`[protocol] Font protocol registered: ${FONT_SCHEME}://${FONT_HOST}/`);
+    logger.info(`[service:protocol] Font protocol registered: ${FONT_SCHEME}://${FONT_HOST}/`);
   }
 
   resolveFontUrl(fileName: string): string {
-    const encodedFileName = encodeURI(fileName);
+    logger.debug(`[service:protocol] resolveFontUrl: ${fileName}`);
+    // encodeURIComponent (not encodeURI): a filename containing '/', '?' or '#'
+    // must not be able to alter the URL's path/query structure.
+    const encodedFileName = encodeURIComponent(fileName);
     return `${FONT_SCHEME}://${FONT_HOST}/${encodedFileName}`;
   }
 }

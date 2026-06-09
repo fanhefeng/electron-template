@@ -6,6 +6,7 @@ import type { FontAsset } from "@shared/fonts";
 import { buildFontFaceCSS } from "@shared/fonts";
 import { useI18n } from "../hooks/useI18n";
 import { useLogger } from "../hooks/useLogger";
+import { useDeepLink } from "../hooks/useDeepLink";
 import { GeneralSection } from "./sections/GeneralSection";
 import { AppearanceSection } from "./sections/AppearanceSection";
 import { LanguageSection } from "./sections/LanguageSection";
@@ -24,8 +25,24 @@ export const SettingsApp = () => {
   const [activeSection, setActiveSection] = useState<SectionId>("general");
   const [saveError, setSaveError] = useState("");
   const dataLoadedRef = useRef(false);
-  const { t } = useI18n();
+  // Tracks unsaved local edits so a settings broadcast from another window
+  // doesn't clobber what the user is currently editing.
+  const dirtyRef = useRef(false);
+  // Mirrors the latest settings so event handlers can read the current value
+  // without an impure read inside a setState updater (StrictMode-safe).
+  const settingsRef = useRef(settings);
+  const { t, ready } = useI18n();
   const logger = useLogger("SettingsApp");
+
+  useEffect(() => {
+    settingsRef.current = settings;
+  }, [settings]);
+
+  useEffect(() => {
+    // Localize the OS window title (the static HTML <title> is only a
+    // pre-load fallback); re-runs when the locale dictionary changes.
+    if (ready) document.title = `${t("app.title")} - ${t("settings.title")}`;
+  }, [ready, t]);
 
   useEffect(() => {
     const api = window.settingsAPI;
@@ -40,6 +57,26 @@ export const SettingsApp = () => {
       .then(setFonts)
       .catch((error) => logger.error("load-fonts", String(error)));
   }, [logger]);
+
+  useEffect(() => {
+    // Keep the form in sync when settings change elsewhere (theme applied live,
+    // another window saved). With unsaved local edits only themeId is merged,
+    // since theme selection persists immediately and is never "dirty".
+    const appBridge = window.app;
+    if (!appBridge) return;
+    const handleSettingsUpdated = (_event: unknown, next: AppSettings) => {
+      setSettings((prev) => (dirtyRef.current ? { ...prev, themeId: next.themeId } : next));
+    };
+    appBridge.onSettingsUpdated(handleSettingsUpdated);
+    return () => {
+      appBridge.offSettingsUpdated(handleSettingsUpdated);
+    };
+  }, []);
+
+  // Deep links can target this window (electrontemplate://settings/...). The
+  // template logs receipt; pass a callback to extend (e.g. jump to the section
+  // named by payload.path).
+  useDeepLink(window.settingsAPI, logger);
 
   useEffect(() => {
     if (!fonts.length) return;
@@ -61,25 +98,57 @@ export const SettingsApp = () => {
       const key = Object.keys(patch)[0];
       const val = Object.values(patch)[0];
       logger.change(String(key), String(val));
+      dirtyRef.current = true;
       setSettings((prev) => ({ ...prev, ...patch }));
     },
     [logger]
+  );
+
+  const handleThemeChange = useCallback(
+    (themeId: string) => {
+      logger.change("themeId", themeId);
+      // Clear any stale error from a previous failed apply before retrying.
+      setSaveError("");
+      // Read the current themeId from the ref (no impure read inside a setState
+      // updater), so we can roll back if the immediate persist fails.
+      const previousThemeId = settingsRef.current.themeId;
+      setSettings((prev) => ({ ...prev, themeId }));
+      // Theme selection applies immediately — consistent with the theme editor,
+      // whose create/update/delete also take effect live. Other form fields
+      // still persist only on Save.
+      window.settingsAPI?.updateSettings({ themeId }).catch((error) => {
+        logger.error("apply-theme-failed", String(error));
+        setSaveError(t("settings.error.saveFailed"));
+        // Roll back ONLY if this failed theme is still the selected one. If the
+        // user has since picked another theme (rapid switching with a flaky
+        // persist), a late rejection must not clobber the newer selection.
+        setSettings((current) => (current.themeId === themeId ? { ...current, themeId: previousThemeId } : current));
+      });
+    },
+    [logger, t]
   );
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSaveError("");
     logger.submit("Settings form");
-    const previousSettings = { ...settings };
     window.settingsAPI
       ?.updateSettings(settings)
       .then(() => window.close())
       .catch((error) => {
         logger.error("save-failed", String(error));
-        setSettings(previousSettings);
+        // Keep the edits on screen AND keep the dirty flag: the save never
+        // reached disk, so the form intentionally diverges from disk until the
+        // user retries Save. Clearing dirty here would let the next
+        // settings:updated broadcast silently overwrite the still-displayed
+        // edits the user believes are pending.
         setSaveError(t("settings.error.saveFailed"));
       });
   };
+
+  // Gate the first paint on the i18n dictionary (blank frame beats a flash of
+  // raw dotted keys). Hooks above still run; only the JSX is deferred.
+  if (!ready) return null;
 
   return (
     <form
@@ -123,7 +192,13 @@ export const SettingsApp = () => {
 
           {activeSection === "general" && <GeneralSection settings={settings} onUpdate={handleUpdate} t={t} />}
           {activeSection === "appearance" && (
-            <AppearanceSection settings={settings} fonts={fonts} onUpdate={handleUpdate} t={t} />
+            <AppearanceSection
+              settings={settings}
+              fonts={fonts}
+              onUpdate={handleUpdate}
+              onThemeChange={handleThemeChange}
+              t={t}
+            />
           )}
           {activeSection === "language" && <LanguageSection settings={settings} onUpdate={handleUpdate} t={t} />}
         </div>

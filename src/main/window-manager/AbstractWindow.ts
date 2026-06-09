@@ -1,5 +1,6 @@
 import type { BrowserWindowConstructorOptions } from "electron";
 import { app, BrowserWindow } from "electron";
+import { pathToFileURL } from "node:url";
 import { logger } from "../services/logger-service";
 import { resourceService } from "../services/resource-service";
 
@@ -11,6 +12,16 @@ export interface WindowOptions {
   openDevTools?: boolean;
 }
 
+// Single source of truth for the dev-server origin: loadContent and the
+// will-navigate whitelist must derive from the same value, otherwise a custom
+// ELECTRON_DEV_SERVER_URL loads fine but every subsequent navigation is blocked.
+const getDevServerBaseUrl = (): string => {
+  const base = process.env.ELECTRON_DEV_SERVER_URL ?? "http://localhost:5173/";
+  // Guarantee a trailing slash so `${base}${htmlFile}` is well-formed even when
+  // a custom ELECTRON_DEV_SERVER_URL omits it (e.g. "http://localhost:5173").
+  return base.endsWith("/") ? base : `${base}/`;
+};
+
 export abstract class AbstractWindow {
   protected browserWindow: BrowserWindow | null = null;
 
@@ -19,17 +30,21 @@ export abstract class AbstractWindow {
   create(): BrowserWindow {
     logger.info(`Creating window: ${this.options.name}`);
 
+    const { webPreferences: overrideWebPreferences, ...restWindowOptions } = this.options.windowOptions ?? {};
     this.browserWindow = new BrowserWindow({
       width: 900,
       height: 680,
       show: false,
+      ...restWindowOptions,
+      // Merge (not replace) so a subclass passing its own webPreferences can
+      // never silently drop the security hardening; the secure defaults win.
       webPreferences: {
+        ...overrideWebPreferences,
         preload: this.options.preload,
         contextIsolation: true,
         nodeIntegration: false,
         sandbox: true,
       },
-      ...this.options.windowOptions,
     });
 
     this.browserWindow.on("ready-to-show", () => {
@@ -42,24 +57,28 @@ export abstract class AbstractWindow {
     });
 
     this.browserWindow.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
-    this.browserWindow.webContents.on("will-navigate", (event, url) => {
-      const allowed = app.isPackaged ? url.startsWith("file://") : url.startsWith("http://localhost:5173/");
-      if (!allowed) {
+    // Production whitelist is the app's OWN renderer directory, not all of
+    // file:// — a bare scheme check would let a compromised renderer navigate
+    // to any local file (file:///etc/passwd).
+    const getRendererBaseUrl = (): string => {
+      const base = pathToFileURL(resourceService.getRendererPath()).href;
+      return base.endsWith("/") ? base : `${base}/`;
+    };
+    const isAllowedUrl = (url: string): boolean =>
+      app.isPackaged ? url.startsWith(getRendererBaseUrl()) : url.startsWith(getDevServerBaseUrl());
+    const blockIfDisallowed = (label: string) => (event: Electron.Event, url: string) => {
+      if (!isAllowedUrl(url)) {
         event.preventDefault();
-        logger.warn(`Blocked navigation in ${this.options.name}: ${url}`);
+        logger.warn(`Blocked ${label} in ${this.options.name}: ${url}`);
       }
-    });
+    };
+    // Guard both navigation AND redirects: an allowed URL that 30x-redirects
+    // off-origin must be blocked too, not just direct navigations.
+    this.browserWindow.webContents.on("will-navigate", blockIfDisallowed("will-navigate"));
+    this.browserWindow.webContents.on("will-redirect", blockIfDisallowed("will-redirect"));
 
     this.loadContent();
 
-    return this.browserWindow;
-  }
-
-  focus(): void {
-    this.browserWindow?.focus();
-  }
-
-  getWindow(): BrowserWindow | null {
     return this.browserWindow;
   }
 
@@ -68,20 +87,25 @@ export abstract class AbstractWindow {
       return;
     }
 
+    // On load failure, show the (blank) window anyway: it was created with
+    // show:false and ready-to-show will never fire, so without this the app
+    // would appear to do nothing — an invisible, unrecoverable window.
+    const showOnLoadFailure = (error: unknown, kind: string) => {
+      logger.error(`Failed to load ${kind} for ${this.options.name}`, error);
+      if (this.browserWindow && !this.browserWindow.isDestroyed()) {
+        this.browserWindow.show();
+      }
+    };
+
     if (!app.isPackaged) {
-      const base = process.env.ELECTRON_DEV_SERVER_URL ?? "http://localhost:5173/";
-      const devUrl = this.options.url ?? `${base}${this.getHtmlFileName()}`;
-      this.browserWindow.loadURL(devUrl).catch((error) => {
-        logger.error(`Failed to load URL for ${this.options.name}`, error);
-      });
+      const devUrl = this.options.url ?? `${getDevServerBaseUrl()}${this.getHtmlFileName()}`;
+      this.browserWindow.loadURL(devUrl).catch((error) => showOnLoadFailure(error, "URL"));
       if (this.shouldOpenDevTools()) {
         this.browserWindow.webContents.openDevTools({ mode: "detach" });
       }
     } else {
       const indexHtml = resourceService.getRendererHtmlPath(this.getHtmlFileName());
-      this.browserWindow
-        .loadFile(indexHtml)
-        .catch((error) => logger.error(`Failed to load file for ${this.options.name}`, error));
+      this.browserWindow.loadFile(indexHtml).catch((error) => showOnLoadFailure(error, "file"));
     }
   }
 

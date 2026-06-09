@@ -68,6 +68,19 @@ const applyTheme = async (theme: ThemeDefinition): Promise<void> => {
 
 const applyAppearance = async (settings: AppSettings): Promise<void> => {
   await ensureDocumentReady();
+
+  // Apply the locale lang attribute BEFORE any font work: locale is independent
+  // of fonts, and a failed font-catalog fetch must not skip it (lang drives CJK
+  // line-breaking, :lang() CSS and screen-reader language).
+  if (settings.locale) {
+    const effectiveLocale =
+      settings.locale === "system" ? (navigator.language.startsWith("zh") ? "zh-CN" : "en") : settings.locale;
+    const lang = LOCALE_TO_LANG[effectiveLocale];
+    if (lang) {
+      document.documentElement.lang = lang;
+    }
+  }
+
   const catalog = await getFontCatalog();
   const font = catalog.get(settings.fontFamily) ?? catalog.get(SYSTEM_FONT_ID);
   if (!font) {
@@ -76,15 +89,6 @@ const applyAppearance = async (settings: AppSettings): Promise<void> => {
 
   if (font.source && font.format) {
     injectFontFace(font);
-  }
-
-  if (settings.locale) {
-    const effectiveLocale =
-      settings.locale === "system" ? (navigator.language.startsWith("zh") ? "zh-CN" : "en") : settings.locale;
-    const lang = LOCALE_TO_LANG[effectiveLocale];
-    if (lang) {
-      document.documentElement.lang = lang;
-    }
   }
 
   const fontStack = font.id === SYSTEM_FONT_ID ? SYSTEM_FONT_STACK : `"${font.cssFamily}", ${SYSTEM_FONT_STACK}`;

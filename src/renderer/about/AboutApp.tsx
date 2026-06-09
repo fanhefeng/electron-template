@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { useI18n } from "../hooks/useI18n";
 import { useLogger } from "../hooks/useLogger";
+import { useDeepLink } from "../hooks/useDeepLink";
 
 export const AboutApp = () => {
   const [appVersion, setAppVersion] = useState<string>("");
   const nodeVersion = window.aboutAPI?.getNodeVersion() ?? "";
   const electronVersion = window.aboutAPI?.getElectronVersion() ?? "";
   const chromeVersion = window.aboutAPI?.getChromeVersion() ?? "";
-  const { t } = useI18n();
+  const { t, ready } = useI18n();
   const logger = useLogger("AboutApp");
 
   useEffect(() => {
@@ -16,6 +17,20 @@ export const AboutApp = () => {
       .then(setAppVersion)
       .catch((error) => logger.error("load-app-version", String(error)));
   }, [logger]);
+
+  useEffect(() => {
+    // Localize the OS window title (the static HTML <title> is only a
+    // pre-load fallback); re-runs when the locale dictionary changes.
+    if (ready) document.title = `${t("app.title")} - ${t("about.title")}`;
+  }, [ready, t]);
+
+  // Deep links can target this window (electrontemplate://about/...); the
+  // template logs receipt.
+  useDeepLink(window.aboutAPI, logger);
+
+  // Gate the first paint on the i18n dictionary (blank frame beats a flash of
+  // raw dotted keys). Hooks above still run; only the JSX is deferred.
+  if (!ready) return null;
 
   const unknown = t("about.version.unknown");
 

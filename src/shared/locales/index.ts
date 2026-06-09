@@ -1,7 +1,8 @@
 import { en } from "./en";
 import { zhCN } from "./zh-CN";
 
-export type SupportedLocale = "en" | "zh-CN";
+export const SUPPORTED_LOCALES = ["en", "zh-CN"] as const;
+export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 export type LocalePreference = SupportedLocale | "system";
 
 const dictionaries: Record<SupportedLocale, Record<string, string>> = {

@@ -1,26 +1,32 @@
 import { useEffect, useState } from "react";
 import type { ProgressInfo } from "electron-updater";
-import type { DeepLinkPayload } from "@shared/deepLink";
 import { useI18n } from "../hooks/useI18n";
 import { useLogger } from "../hooks/useLogger";
+import { useDeepLink } from "../hooks/useDeepLink";
+
+type UpdateStatusMessage = { key: string; params?: Record<string, string> };
 
 const UpdateStatus = ({ t }: { t: (key: string, params?: Record<string, string>) => string }) => {
-  const [status, setStatus] = useState("");
+  // Store the i18n KEY (translated at render time): the listeners then register
+  // once on mount instead of tearing down and re-registering all six on every
+  // settings change (t's identity changes whenever messages reload), and an
+  // already-displayed status follows a locale switch automatically.
+  const [status, setStatus] = useState<UpdateStatusMessage | null>(null);
 
   useEffect(() => {
     const api = window.electronAPI;
     if (!api) return;
 
-    const handleAvailable = () => setStatus(t("update.status.available"));
-    const handleNotAvailable = () => setStatus(t("update.status.notAvailable"));
+    const handleAvailable = () => setStatus({ key: "update.status.available" });
+    const handleNotAvailable = () => setStatus({ key: "update.status.notAvailable" });
     const handleError = (_event: unknown, message: string) => {
-      setStatus(t("update.status.error", { message }));
+      setStatus({ key: "update.status.error", params: { message } });
     };
-    const handleDownloaded = () => setStatus(t("update.status.downloaded"));
-    const handlePending = () => setStatus(t("update.status.downloading"));
+    const handleDownloaded = () => setStatus({ key: "update.status.downloaded" });
+    const handlePending = () => setStatus({ key: "update.status.downloading" });
     const handleProgress = (_event: unknown, progress: ProgressInfo) => {
       if (typeof progress.percent === "number") {
-        setStatus(t("update.status.downloadingPercent", { percent: progress.percent.toFixed(0) }));
+        setStatus({ key: "update.status.downloadingPercent", params: { percent: progress.percent.toFixed(0) } });
       }
     };
 
@@ -31,6 +37,36 @@ const UpdateStatus = ({ t }: { t: (key: string, params?: Record<string, string>)
     api.onUpdateDownloadPending(handlePending);
     api.onUpdateDownloadProgress(handleProgress);
 
+    // Pull the current updater state: a (re)opened window missed any events
+    // fired before this effect ran (download finished while hidden to tray,
+    // window recreated mid-download, etc.).
+    api
+      .getUpdateState()
+      .then((state) => {
+        // Functional update gated on `current`: the pull can resolve AFTER a
+        // fresher live push event already set a status, and must never revert
+        // it (e.g. "downloaded" back to a stale "downloading" snapshot).
+        setStatus((current) => {
+          if (current) return current;
+          if (state.isDownloaded) {
+            return { key: "update.status.downloaded" };
+          }
+          if (state.isDownloading) {
+            return state.percent !== null
+              ? { key: "update.status.downloadingPercent", params: { percent: state.percent.toFixed(0) } }
+              : { key: "update.status.downloading" };
+          }
+          if (state.isUpdateAvailable) {
+            // Update reported available before this window (re)opened: without
+            // this branch the UI would fall back to "idle" and lose the cue
+            // that an update is ready to download.
+            return { key: "update.status.available" };
+          }
+          return current;
+        });
+      })
+      .catch((error) => window.log?.error("get-update-state-failed", String(error)));
+
     return () => {
       api.offUpdateAvailable(handleAvailable);
       api.offUpdateNotAvailable(handleNotAvailable);
@@ -39,40 +75,41 @@ const UpdateStatus = ({ t }: { t: (key: string, params?: Record<string, string>)
       api.offUpdateDownloadPending(handlePending);
       api.offUpdateDownloadProgress(handleProgress);
     };
-  }, [t]);
+  }, []);
 
   return (
     <div className="rounded-lg bg-bg-tertiary px-4 py-3">
-      <p className="text-sm text-text-secondary">{status || t("update.status.idle")}</p>
+      <p className="text-sm text-text-secondary">
+        {status ? t(status.key, status.params) : t("update.status.idle")}
+      </p>
     </div>
   );
 };
 
 export const App = () => {
-  const { t } = useI18n();
+  const { t, ready } = useI18n();
   const logger = useLogger("App");
   const [deepLinkInfo, setDeepLinkInfo] = useState<string>("");
 
   useEffect(() => {
-    const api = window.electronAPI;
-    if (!api) return;
+    // Localize the OS window title (the static HTML <title> is only a
+    // pre-load fallback); re-runs when the locale dictionary changes.
+    if (ready) document.title = t("app.title");
+  }, [ready, t]);
 
-    const handleDeepLink = (_event: unknown, payload: DeepLinkPayload) => {
-      const info = `path=${payload.path} params=${JSON.stringify(payload.params)}`;
-      logger.info("deep-link-received", info);
-      setDeepLinkInfo(info);
-    };
-
-    api.onDeepLink(handleDeepLink);
-    return () => {
-      api.offDeepLink(handleDeepLink);
-    };
-  }, [logger]);
+  useDeepLink(window.electronAPI, logger, (payload) => {
+    setDeepLinkInfo(`path=${payload.path} params=${JSON.stringify(payload.params)}`);
+  });
 
   const handleOpenWindow = (windowName: "about" | "settings") => {
     logger.click(`${windowName} button`);
     window.electronAPI?.openWindow(windowName);
   };
+
+  // Gate the first paint on the i18n dictionary: rendering before it loads
+  // flashes raw dotted keys ("app.title", …) for a frame. A blank frame is
+  // the lesser evil. (Hooks above still run; only the JSX is deferred.)
+  if (!ready) return null;
 
   return (
     <div

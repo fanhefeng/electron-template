@@ -5,12 +5,9 @@
 
 export type AppEnvironment = "development" | "production";
 
+// appId/productName 的唯一事实来源是 package.json 的 build 字段 —— 此处不再
+// 重复维护一份运行时永远读不到的副本（双源会悄悄漂移）。
 export const APP_CONFIG = {
-  /** 应用标识（与 package.json build.appId 对应） */
-  appId: "com.example.electrontemplate",
-  /** 产品名称 */
-  productName: "ElectronTemplate",
-
   /** 按环境区分的配置 */
   env: {
     development: {

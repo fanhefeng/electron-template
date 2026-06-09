@@ -29,8 +29,11 @@ export class FontService {
   private cachedMap: Map<string, FontAsset> | null = null;
 
   async listFonts(options: ListFontsOptions = {}): Promise<FontAsset[]> {
+    logger.debug(`[service:font] listFonts called (forceRefresh=${options.forceRefresh ?? false})`);
     if (!options.forceRefresh && this.cachedFonts) {
-      return this.cachedFonts;
+      // Return a shallow copy so a caller mutating the array can't corrupt the
+      // shared cache.
+      return [...this.cachedFonts];
     }
 
     const fonts: FontAsset[] = [DEFAULT_SYSTEM_FONT];
@@ -46,26 +49,29 @@ export class FontService {
           }
 
           try {
+            // createAssetFromFile reserves its id in usedIds synchronously, so
+            // two files normalizing to the same base name can't collide even
+            // though these callbacks interleave around the await.
             const asset = await this.createAssetFromFile(entry.name, usedIds);
             if (asset) {
               fonts.push(asset);
-              usedIds.add(asset.id);
             }
           } catch (error) {
-            logger.warn(`Failed to load font: ${entry.name}`, error);
+            logger.warn(`[service:font] failed to load font: ${entry.name}`, error);
           }
         })
       );
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
-        logger.warn("Failed to scan fonts directory", error);
+        logger.warn("[service:font] failed to scan fonts directory", error);
       }
     }
 
     this.cachedFonts = fonts;
     this.cachedMap = new Map(fonts.map((font) => [font.id, font]));
     logger.info(`[service:font] listFonts: loaded ${fonts.length} fonts`);
-    return fonts;
+    // Hand callers a copy, never the cached array itself.
+    return [...fonts];
   }
 
   async getFont(id: string): Promise<FontAsset | undefined> {
@@ -88,13 +94,17 @@ export class FontService {
     const format = SUPPORTED_FORMATS[extension];
 
     if (!format) {
-      logger.warn(`Unsupported font format: ${extension} (file: ${fileName})`);
+      logger.warn(`[service:font] unsupported font format: ${extension} (file: ${fileName})`);
       return null;
     }
 
     const baseName = path.basename(fileName, path.extname(fileName));
     const label = this.formatLabel(baseName);
     const id = this.createUniqueId(baseName, usedIds);
+    // Reserve the id immediately (this method runs synchronously before its
+    // caller's post-await continuation), so a later same-base-name file in the
+    // same scan sees it and gets a unique counter suffix instead of colliding.
+    usedIds.add(id);
     const source = protocolService.resolveFontUrl(fileName);
 
     return {

@@ -4,6 +4,7 @@ import { logger } from "../logger-service";
 import { i18nService } from "../i18n-service";
 import { resourceService } from "../resource-service";
 import type { WindowManager } from "../../window-manager/WindowManager";
+import { surfaceWindow } from "../../window-manager/WindowManager";
 
 const DEV_SUFFIX = " (Dev)";
 
@@ -11,6 +12,8 @@ export class TrayService {
   private tray: Tray | null = null;
   private windowManager: WindowManager | null = null;
   private mainWindow: BrowserWindow | null = null;
+  private detachMainWindow: (() => void) | null = null;
+  private quitListenerRegistered = false;
   private minimizeToTray = false;
   private isQuitting = false;
 
@@ -19,29 +22,55 @@ export class TrayService {
     this.windowManager = windowManager;
     this.createTray();
 
-    app.on("before-quit", () => {
-      logger.info("[service:tray] before-quit: marking isQuitting=true");
-      this.isQuitting = true;
-    });
+    // Guard against repeated initialize calls stacking before-quit listeners.
+    if (!this.quitListenerRegistered) {
+      this.quitListenerRegistered = true;
+      app.on("before-quit", () => {
+        logger.info("[service:tray] before-quit: marking isQuitting=true");
+        this.isQuitting = true;
+      });
+    }
   }
 
   attachMainWindow(window: BrowserWindow): void {
     logger.info(`[service:tray] attachMainWindow called, windowId=${window.id}`);
-    this.mainWindow = window;
+    if (this.mainWindow === window) {
+      // Same window re-attached (e.g. macOS 'activate' on a living window):
+      // listeners are already wired, do not stack duplicates.
+      return;
+    }
+    // Detach from any previous window so close handlers never accumulate.
+    this.detachMainWindow?.();
 
-    window.on("close", (event) => {
-      if (this.minimizeToTray && !this.isQuitting) {
+    const handleClose = (event: Electron.Event) => {
+      // Guard on tray existence: if createTray() failed (e.g. icon missing or
+      // undecodable) the window must close normally — hiding it with no tray
+      // icon to restore and no dock would leave an unrecoverable zombie app on
+      // Windows/Linux (window-all-closed never fires).
+      if (this.tray && this.minimizeToTray && !this.isQuitting) {
         logger.info("[service:tray] intercepting main window close, hiding to tray");
         event.preventDefault();
         window.hide();
       }
-    });
+    };
+    const handleClosed = () => {
+      if (this.mainWindow === window) {
+        this.mainWindow = null;
+        this.detachMainWindow = null;
+      }
+    };
 
-    window.on("closed", () => {
+    window.on("close", handleClose);
+    window.on("closed", handleClosed);
+    this.mainWindow = window;
+    this.detachMainWindow = () => {
+      window.off("close", handleClose);
+      window.off("closed", handleClosed);
       if (this.mainWindow === window) {
         this.mainWindow = null;
       }
-    });
+      this.detachMainWindow = null;
+    };
   }
 
   setMinimizeToTray(enabled: boolean): void {
@@ -59,6 +88,10 @@ export class TrayService {
     logger.info("[service:tray] cleanup called");
     this.tray?.destroy();
     this.tray = null;
+    // Properly detach the close/closed listeners (also nulls mainWindow): just
+    // nulling the field would leave a stale close-interceptor on the window if
+    // cleanup() were ever called outside of app shutdown.
+    this.detachMainWindow?.();
     this.mainWindow = null;
   }
 
@@ -127,23 +160,13 @@ export class TrayService {
     const win = this.mainWindow ?? this.windowManager?.getBrowserWindow("main") ?? null;
     if (!win || win.isDestroyed()) {
       logger.info("[service:tray] showMainWindow: no main window, opening new one");
-      this.openAndAttachMainWindow();
+      // open() re-creates the window and its onCreate hook re-attaches the tray
+      // close interceptor (this very service); it also surfaces the window.
+      this.windowManager?.open("main");
       return;
     }
-    this.showWindow(win);
-  }
-
-  private openAndAttachMainWindow(): void {
-    const newWindow = this.windowManager?.open("main");
-    if (newWindow) {
-      this.attachMainWindow(newWindow);
-    }
-  }
-
-  private showWindow(win: BrowserWindow): void {
-    logger.info("[service:tray] showWindow: showing and focusing");
-    win.show();
-    win.focus();
+    logger.info("[service:tray] showMainWindow: surfacing existing window");
+    surfaceWindow(win);
   }
 
   private getTooltip(): string {

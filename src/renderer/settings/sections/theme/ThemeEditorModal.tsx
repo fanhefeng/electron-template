@@ -1,7 +1,8 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ThemeColors, ThemeDefinition, ThemeSpacing } from "@shared/theme";
-import { DEFAULT_SPACING, THEME_SCHEMA_VERSION } from "@shared/theme";
+import { DEFAULT_SPACING, THEME_SCHEMA_VERSION, isSafeCssColor, isSafeCssLength } from "@shared/theme";
 import { ColorTokenEditor } from "./ColorTokenEditor";
+import { CloseIcon } from "./icons";
 
 type ColorGroup = {
   labelKey: string;
@@ -43,7 +44,7 @@ const SPACING_KEYS: (keyof ThemeSpacing)[] = ["radiusSm", "radiusMd", "radiusLg"
 
 interface ThemeEditorModalProps {
   initialTheme?: ThemeDefinition;
-  onSave: (data: Omit<ThemeDefinition, "id" | "builtIn">) => void;
+  onSave: (data: Omit<ThemeDefinition, "id" | "builtIn">) => void | Promise<void>;
   onCancel: () => void;
   t: (key: string) => string;
 }
@@ -79,6 +80,29 @@ export const ThemeEditorModal = ({ initialTheme, onSave, onCancel, t }: ThemeEdi
     }
   );
   const [spacing, setSpacing] = useState<ThemeSpacing>(initialTheme?.spacing ?? { ...DEFAULT_SPACING });
+  // i18n key of the inline footer error — client-side validation failure or a
+  // rejected IPC save (the modal stays open with the user's edits either way).
+  const [errorKey, setErrorKey] = useState<string | null>(null);
+
+  // Keep the latest onCancel in a ref so the Esc/focus effect can run exactly
+  // once on mount (its deps stay empty) without re-binding when the parent
+  // passes a fresh onCancel identity each render — re-running would steal the
+  // user's focus back to the name field mid-edit.
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  const onCancelRef = useRef(onCancel);
+  useEffect(() => {
+    onCancelRef.current = onCancel;
+  }, [onCancel]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onCancelRef.current();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    // Move focus into the dialog on open so keyboard users start inside it.
+    nameInputRef.current?.focus();
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const handleColorChange = useCallback((key: keyof ThemeColors, value: string) => {
     setColors((prev) => ({ ...prev, [key]: value }));
@@ -90,12 +114,28 @@ export const ThemeEditorModal = ({ initialTheme, onSave, onCancel, t }: ThemeEdi
 
   const handleSave = () => {
     if (!name.trim()) return;
-    onSave({
-      name: name.trim(),
-      colorScheme,
-      colors,
-      spacing,
-      version: THEME_SCHEMA_VERSION,
+    // Pre-validate with the same rules the main process enforces, so the user
+    // gets an inline message instead of a rejected IPC call.
+    const allValid =
+      Object.values(colors).every((value) => isSafeCssColor(value)) &&
+      Object.values(spacing).every((value) => isSafeCssLength(value));
+    if (!allValid) {
+      setErrorKey("theme.editor.invalidValues");
+      return;
+    }
+    setErrorKey(null);
+    void Promise.resolve(
+      onSave({
+        name: name.trim(),
+        colorScheme,
+        colors,
+        spacing,
+        version: THEME_SCHEMA_VERSION,
+      })
+    ).catch(() => {
+      // The IPC save was rejected (disk error / main-side validation): the
+      // modal stays open with the edits — show why Save appeared to do nothing.
+      setErrorKey("theme.editor.saveFailed");
     });
   };
 
@@ -103,10 +143,15 @@ export const ThemeEditorModal = ({ initialTheme, onSave, onCancel, t }: ThemeEdi
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 [padding-block-start:2rem]">
-      <div className="flex max-h-[calc(100vh-4rem)] w-[36rem] flex-col rounded-lg bg-bg-primary shadow-xl">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="theme-editor-title"
+        className="flex max-h-[calc(100vh-4rem)] w-[36rem] flex-col rounded-lg bg-bg-primary shadow-xl"
+      >
         {/* Header */}
         <div className="flex items-center justify-between border-be border-border-primary px-5 py-3">
-          <h3 className="text-sm font-semibold text-text-primary">
+          <h3 id="theme-editor-title" className="text-sm font-semibold text-text-primary">
             {t(isEditing ? "theme.editor.title.edit" : "theme.editor.title.create")}
           </h3>
           <button
@@ -114,19 +159,7 @@ export const ThemeEditorModal = ({ initialTheme, onSave, onCancel, t }: ThemeEdi
             onClick={onCancel}
             className="rounded p-1 text-text-tertiary hover:bg-surface-hover hover:text-text-primary"
           >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <line x1="18" x2="6" y1="6" y2="18" />
-              <line x1="6" x2="18" y1="6" y2="18" />
-            </svg>
+            <CloseIcon />
           </button>
         </div>
 
@@ -136,6 +169,7 @@ export const ThemeEditorModal = ({ initialTheme, onSave, onCancel, t }: ThemeEdi
           <div className="[margin-block-end:1rem]">
             <label className="mbe-1 block text-xs font-medium text-text-secondary">{t("theme.editor.name")}</label>
             <input
+              ref={nameInputRef}
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -200,7 +234,8 @@ export const ThemeEditorModal = ({ initialTheme, onSave, onCancel, t }: ThemeEdi
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-2 border-bs border-border-primary px-5 py-3">
+        <div className="flex items-center justify-end gap-2 border-bs border-border-primary px-5 py-3">
+          {errorKey && <p className="me-auto text-xs text-status-error">{t(errorKey)}</p>}
           <button
             type="button"
             onClick={onCancel}

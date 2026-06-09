@@ -3,16 +3,19 @@ import type { ProgressInfo } from "electron-updater";
 import type { OpenWindowPayload } from "../shared/ipcChannels";
 import { IPC_CHANNELS } from "../shared/ipcChannels";
 import type { DeepLinkPayload } from "../shared/deepLink";
-import { initializeAppearanceBridge } from "./appearanceBridge";
-import { initializeLogBridge } from "./logBridge";
+import type { UpdateStateSnapshot } from "../shared/update";
+import { initializeCommonBridges } from "./commonBridges";
 
-initializeLogBridge("renderer:main");
-initializeAppearanceBridge();
+initializeCommonBridges("renderer:main");
 
 contextBridge.exposeInMainWorld("electronAPI", {
   checkForUpdates: () => ipcRenderer.invoke(IPC_CHANNELS.CHECK_FOR_UPDATES),
   applyUpdate: () => ipcRenderer.invoke(IPC_CHANNELS.APPLY_UPDATE),
+  getUpdateState: () => ipcRenderer.invoke(IPC_CHANNELS.GET_UPDATE_STATE) as Promise<UpdateStateSnapshot>,
   openWindow: (windowName: OpenWindowPayload) => ipcRenderer.invoke(IPC_CHANNELS.OPEN_WINDOW, windowName),
+  // Template example endpoint: the complete worked notification chain
+  // (channel → schema → runtime guard → handler → service); no shipped
+  // renderer caller — call it from UI code when a consumer needs it.
   showNotification: (title: string, body: string) =>
     ipcRenderer.invoke(IPC_CHANNELS.SHOW_NOTIFICATION, { title, body }),
   onUpdateAvailable: (callback: () => void) => ipcRenderer.on(IPC_CHANNELS.UPDATE_AVAILABLE, callback),
@@ -37,4 +40,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.on(IPC_CHANNELS.DEEP_LINK_NAVIGATE, callback),
   offDeepLink: (callback: (_event: Electron.IpcRendererEvent, payload: DeepLinkPayload) => void) =>
     ipcRenderer.removeListener(IPC_CHANNELS.DEEP_LINK_NAVIGATE, callback),
+  consumePendingDeepLink: () =>
+    ipcRenderer.invoke(IPC_CHANNELS.DEEP_LINK_CONSUME_PENDING) as Promise<DeepLinkPayload | null>,
 });

@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.renderer.json",
+  "compilerOptions": {
+    "composite": false,
+    "noEmit": true,
+    "incremental": true,
+    "tsBuildInfoFile": "dist/cache/tsconfig.renderer.check.tsbuildinfo"
+  }
+}

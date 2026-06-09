@@ -24,8 +24,6 @@ export const en: Record<string, string> = {
   "notification.update.error.body": "An error occurred during update check.",
   "notification.update.ready.title": "Update Ready",
   "notification.update.ready.body": "New version downloaded, ready to install.",
-  "notification.update.downloadFailed.title": "Download Failed",
-  "notification.update.downloadFailed.body": "Unable to download the update package.",
 
   // Navigation
   "nav.about": "About",
@@ -39,20 +37,18 @@ export const en: Record<string, string> = {
   "settings.nav.general": "General",
   "settings.nav.appearance": "Appearance",
   "settings.nav.language": "Language",
-  "settings.theme.label": "Theme",
-  "settings.theme.light": "Light",
-  "settings.theme.dark": "Dark",
   "settings.autoLaunch": "Auto Launch at startup",
   "settings.notifications": "Enable Notifications",
   "settings.minimizeToTray": "Minimize to tray on close",
   "settings.font.label": "Font Family",
+  "settings.font.systemDefault": "System Default",
   "settings.font.preview": "Font Preview: The quick brown fox jumps over the lazy dog.",
   "settings.locale.label": "Language",
   "settings.locale.system": "System Default",
   "settings.locale.en": "English",
   "settings.locale.zhCN": "中文",
   "settings.button.save": "Save Settings",
-  "settings.error.saveFailed": "Failed to save settings. Changes have been reverted.",
+  "settings.error.saveFailed": "Failed to save settings. Please try again.",
 
   // Theme presets
   "theme.preset.light": "Light",
@@ -62,7 +58,6 @@ export const en: Record<string, string> = {
   "theme.preset.roseLight": "Rose Light",
 
   // Theme picker
-  "theme.picker.title": "Theme",
   "theme.picker.builtIn": "Built-in",
   "theme.picker.custom": "Custom",
   "theme.picker.createCustom": "Create Custom Theme",
@@ -72,7 +67,10 @@ export const en: Record<string, string> = {
   "theme.picker.duplicateTheme": "Duplicate",
   "theme.picker.editTheme": "Edit",
   "theme.picker.deleteConfirm": "Are you sure you want to delete this theme?",
+  "theme.picker.deleteFailed": "Failed to delete theme.",
+  "theme.picker.duplicateFailed": "Failed to duplicate theme.",
   "theme.picker.active": "Active",
+  "theme.picker.copySuffix": " (copy)",
 
   // Theme editor
   "theme.editor.title.create": "Create Theme",
@@ -84,6 +82,8 @@ export const en: Record<string, string> = {
   "theme.editor.spacing": "Spacing",
   "theme.editor.save": "Save Theme",
   "theme.editor.cancel": "Cancel",
+  "theme.editor.invalidValues": "Some color or spacing values are invalid. Use hex, rgb()/hsl(), or a color name.",
+  "theme.editor.saveFailed": "Failed to save theme. Please try again.",
 
   // Theme color groups
   "theme.color.group.backgrounds": "Backgrounds",
@@ -126,9 +126,8 @@ export const en: Record<string, string> = {
   "theme.spacing.radiusFull": "Radius Full",
 
   // Theme import/export
-  "theme.import.success": "Theme imported successfully.",
   "theme.import.error": "Failed to import theme. The file may be invalid.",
-  "theme.export.success": "Theme exported successfully.",
+  "theme.export.error": "Failed to export theme.",
 
   // Error boundary
   "error.boundary.title": "Something went wrong",

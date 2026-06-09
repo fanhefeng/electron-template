@@ -1,5 +1,5 @@
 import { SYSTEM_FONT_ID } from "./fonts";
-import type { LocalePreference } from "./locales";
+import { SUPPORTED_LOCALES, type LocalePreference } from "./locales";
 import type { ThemeId } from "./theme";
 
 export type FontPreference = typeof SYSTEM_FONT_ID | string;
@@ -22,7 +22,7 @@ export const defaultSettings: AppSettings = {
   locale: "system",
 };
 
-const VALID_LOCALES: readonly AppSettings["locale"][] = ["system", "en", "zh-CN"];
+const VALID_LOCALES: readonly AppSettings["locale"][] = ["system", ...SUPPORTED_LOCALES];
 
 const THEME_MIGRATION_MAP: Record<string, ThemeId> = {
   light: "builtin-light",
@@ -32,6 +32,12 @@ const THEME_MIGRATION_MAP: Record<string, ThemeId> = {
 /** Strip unknown keys and validate known values from an untrusted Partial<AppSettings>. */
 export const sanitizeSettings = (raw: Record<string, unknown>): Partial<AppSettings> => {
   const result: Partial<AppSettings> = {};
+
+  // Untrusted renderer input: a non-object payload (null/number/string) would
+  // make the `in` checks below throw. Treat anything non-object as "no changes".
+  if (typeof raw !== "object" || raw === null) {
+    return result;
+  }
 
   if ("themeId" in raw && typeof raw.themeId === "string" && raw.themeId.length > 0) {
     result.themeId = raw.themeId;

@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.preload.json",
+  "compilerOptions": {
+    "composite": false,
+    "noEmit": true,
+    "incremental": true,
+    "tsBuildInfoFile": "dist/cache/tsconfig.preload.check.tsbuildinfo"
+  }
+}

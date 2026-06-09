@@ -18,3 +18,7 @@ src/shared/*.js
 .idea/
 .trae
 .kiro
+
+# Claude Code local config & scratch worktrees (keep shared .claude/* committable)
+.claude/settings.local.json
+.claude/worktrees/

@@ -1,16 +1,18 @@
 export const IPC_CHANNELS = {
   CHECK_FOR_UPDATES: "app/check-for-updates",
   APPLY_UPDATE: "app/apply-update",
+  GET_UPDATE_STATE: "app/update-state",
   GET_SETTINGS: "settings/get",
   UPDATE_SETTINGS: "settings/update",
   LIST_FONTS: "fonts/list",
   GET_APP_VERSION: "app/version",
   OPEN_WINDOW: "window/open",
-  DEEP_LINK_NAVIGATE: "deep-link/navigate",
+  DEEP_LINK_NAVIGATE: "deep-link:navigate",
+  DEEP_LINK_CONSUME_PENDING: "deep-link/consume-pending",
   GET_MESSAGES: "i18n/messages",
   SHOW_NOTIFICATION: "notification/show",
   SETTINGS_UPDATED: "settings:updated",
-  LOG_FROM_RENDERER: "log/from-renderer",
+  LOG_FROM_RENDERER: "log:from-renderer",
   LIST_THEMES: "theme/list",
   GET_THEME: "theme/get",
   CREATE_THEME: "theme/create",
@@ -27,7 +29,5 @@ export const IPC_CHANNELS = {
   UPDATE_DOWNLOAD_PROGRESS: "update:download-progress",
   UPDATE_DOWNLOADED: "update:downloaded",
 } as const;
-
-export type IpcChannel = (typeof IPC_CHANNELS)[keyof typeof IPC_CHANNELS];
 
 export type OpenWindowPayload = "about" | "settings";
