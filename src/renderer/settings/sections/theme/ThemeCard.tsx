@@ -25,10 +25,22 @@ export const ThemeCard = ({
   t,
 }: ThemeCardProps) => {
   return (
-    <button
-      type="button"
+    // role="button" (not a real <button>) because the card holds its own action
+    // buttons (edit/duplicate/export/delete) — a <button> nested inside a
+    // <button> is invalid HTML and triggers a React hydration error. Keyboard
+    // activation is wired manually to keep the card selectable without a mouse.
+    <div
+      role="button"
+      tabIndex={0}
+      aria-pressed={isActive}
       onClick={() => onSelect(theme.id)}
-      className={`group relative flex flex-col gap-2 rounded-lg border-2 p-3 text-start transition-colors ${
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect(theme.id);
+        }
+      }}
+      className={`group relative flex cursor-pointer flex-col gap-2 rounded-lg border-2 p-3 text-start transition-colors ${
         isActive
           ? "border-accent-primary bg-accent-subtle"
           : "border-border-primary bg-surface-primary hover:border-border-secondary"
@@ -98,7 +110,7 @@ export const ThemeCard = ({
           </ActionButton>
         )}
       </div>
-    </button>
+    </div>
   );
 };
 
