@@ -79,7 +79,7 @@ const UpdateStatus = ({ t }: { t: (key: string, params?: Record<string, string>)
 
   return (
     <div className="rounded-lg bg-bg-tertiary px-4 py-3">
-      <p className="text-sm text-text-secondary">
+      <p className="text-sm text-text-secondary [overflow-wrap:anywhere]">
         {status ? t(status.key, status.params) : t("update.status.idle")}
       </p>
     </div>
