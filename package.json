@@ -47,9 +47,9 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "concurrently": "^9.2.1",
-    "electron": "^41.2.1",
-    "electron-builder": "^26.8.1",
-    "esbuild": "^0.28.0",
+    "electron": "43.8.7",
+    "electron-builder": "^26.15.3",
+    "esbuild": "^0.28.1",
     "eslint": "^10.2.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react-hooks": "^7.1.1",
@@ -60,7 +60,7 @@
     "tailwindcss": "^4.2.4",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.58.2",
-    "vite": "^8.0.9",
+    "vite": "^8.3.4",
     "wait-on": "^9.0.5"
   },
   "build": {
@@ -120,5 +120,16 @@
     "*.{json,md,yml,yaml,mjs,cjs,html,css}": [
       "prettier --write"
     ]
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "npm",
+      "version": "11.17.0",
+      "onFail": "download"
+    }
+  },
+  "overrides": {
+    "builder-util-runtime@<9.7.0": "9.7.0",
+    "shell-quote@<1.11.0": "1.11.0"
   }
 }
