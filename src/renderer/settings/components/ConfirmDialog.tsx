@@ -16,6 +16,7 @@ interface ConfirmDialogProps {
  * for a destructive action. Reusable for any confirm flow, not just delete.
  */
 export const ConfirmDialog = ({ message, confirmLabel, cancelLabel, onConfirm, onCancel }: ConfirmDialogProps) => {
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
   // Ref so the mount-only effect always calls the latest onCancel without
   // re-binding (a fresh parent closure each render would otherwise re-run it).
@@ -25,16 +26,25 @@ export const ConfirmDialog = ({ message, confirmLabel, cancelLabel, onConfirm, o
   }, [onCancel]);
 
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onCancelRef.current();
-    };
-    document.addEventListener("keydown", handleKeyDown);
+    const previousFocus = document.activeElement;
+    const dialog = dialogRef.current;
+    dialog?.showModal();
     cancelButtonRef.current?.focus();
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      dialog?.close();
+      if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus();
+    };
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 [padding-inline:1rem]">
+    <dialog
+      ref={dialogRef}
+      onCancel={(event) => {
+        event.preventDefault();
+        onCancelRef.current();
+      }}
+      className="m-auto max-w-[calc(100%-2rem)] border-0 bg-transparent p-0 backdrop:bg-black/40"
+    >
       <div
         role="alertdialog"
         aria-modal="true"
@@ -60,6 +70,6 @@ export const ConfirmDialog = ({ message, confirmLabel, cancelLabel, onConfirm, o
           </button>
         </div>
       </div>
-    </div>
+    </dialog>
   );
 };
